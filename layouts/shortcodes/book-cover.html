@@ -1,0 +1,38 @@
+<div class="book-meta-card">
+    <div class="book-cover-img-wrapper">
+        {{ if .Get "src" }}
+        <img src="{{ .Get "src" }}" alt="{{ .Get "title" }} 封面">
+        {{ else }}
+        <div class="book-no-cover">
+            無封面
+        </div>
+        {{ end }}
+    </div>
+
+    <div class="book-info">
+        <h2 class="book-title">{{ .Get "title" }}</h2>
+
+        <div class="book-meta-row">
+            <span>👨‍💼: </span>
+            <strong>{{ .Get "author" }}</strong>
+        </div>
+
+        {{ if .Get "date" }}
+        <div class="book-meta-row">
+            <span>📅: </span>
+            <span>{{ .Get "date" }}</span>
+        </div>
+        {{ end }}
+
+        {{ if .Get "link" }}
+        <a href="{{ .Get "link" }}" target="_blank" class="book-btn">
+        Buy Now
+        </a>
+        {{ end }}
+
+        <div class="book-summary">
+            <strong>📖： </strong><br>
+            {{ .Inner | markdownify }}
+        </div>
+    </div>
+</div>

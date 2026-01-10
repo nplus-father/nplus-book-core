@@ -1,0 +1,15 @@
+<nav>
+    {{ partial "docs/brand" . }}
+
+    {{ if (fileExists "layouts/partials/docs/menu-before.html") -}}
+    {{ partial "docs/menu-before" . }}
+    {{- end }}
+
+    {{ partial "docs/search" . }}
+
+    {{ partial "docs/menu-filetree" . }}
+
+    {{ if (fileExists "layouts/partials/docs/menu-after.html") -}}
+    {{ partial "docs/menu-after" . }}
+    {{- end }}
+</nav>

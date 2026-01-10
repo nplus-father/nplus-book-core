@@ -1,0 +1,184 @@
+/* nplus-book-core/assets/_custom.scss */
+@import "variables";
+
+/* 全站主題覆寫 */
+html, body {
+  background-color: var(--body-bg) !important;
+  color: var(--body-text) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.book-menu, header.book-header {
+  background-color: var(--body-bg) !important;
+  border-color: var(--gray-200) !important;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.book-brand .book-icon {
+  filter: none !important;
+}
+
+.book-icon {
+  filter: var(--icon-filter);
+}
+
+/* Logo 圓形化 (如果不喜歡可移除) */
+.book-brand img {
+  border-radius: 50%;
+  border: 2px solid var(--gray-200);
+  width: 3rem;
+  height: 3rem;
+  object-fit: cover;
+}
+
+/* =========================================
+   2. 統一按鈕樣式 (.book-btn)
+   ========================================= */
+.book-btn {
+  /* 【關鍵修改 3】設定寬度為「適應內容」，解決按鈕太長的問題 */
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.4rem 1rem;
+  margin-top: 0.5rem;
+
+  background-color: var(--btn-bg) !important;
+  color: var(--btn-text) !important; /* 使用變數 (Light=黑, Dark=白) */
+
+  border-radius: 4px;
+  border: none; /* 如果 Light Mode 覺得太淡，可以在這裡加 border: 1px solid var(--gray-300); */
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: opacity 0.2s, background-color 0.2s, transform 0.1s;
+
+  &:hover {
+    background-color: var(--btn-hover-bg) !important; /* 新增 hover 變數 */
+    opacity: 1;
+    text-decoration: none;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+/* =========================================
+   3. Book Cover Component
+   ========================================= */
+.book-meta-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background-color: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--card-shadow);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.book-cover-img-wrapper {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 180px;
+  margin: 0 auto;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: var(--img-shadow);
+  background-color: var(--gray-200);
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+}
+
+/* 無封面佔位符 */
+.book-no-cover {
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--gray-200);
+  color: var(--gray-500);
+  font-size: 0.9em;
+}
+
+.book-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  /* 這裡不需要 align-items，因為 button 已經設為 fit-content */
+}
+
+.book-title {
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--body-text);
+}
+
+.book-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  /* 【關鍵修改 1】使用新的 meta-color 變數 (Light=黑, Dark=灰) */
+  color: var(--meta-color);
+}
+
+.book-summary {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--gray-300);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--body-text);
+}
+
+/* Amazon Link (保持不變) */
+a.amazon-link {
+  color: #d58e00;
+  font-weight: 500;
+  padding: 0 4px;
+  border-radius: 4px;
+
+  &:hover {
+    color: #b37700;
+    text-decoration: none;
+    background-color: rgba(213, 142, 0, 0.1);
+  }
+}
+
+html[data-theme="dark"] a.amazon-link {
+  color: #ffad33;
+
+  &:hover {
+    color: #ffbf66;
+    background-color: rgba(255, 173, 51, 0.15);
+  }
+}
