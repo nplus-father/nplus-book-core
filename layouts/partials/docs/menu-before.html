@@ -5,5 +5,13 @@
         <span style="font-weight: bold; font-family: monospace;">恩普拉氏</span>
     </a>
 
+    {{ with site.Params.reviewUrl }}
+    <a href="{{ . }}" class="book-btn" target="_blank" rel="noopener noreferrer"
+       style="display: inline-flex; width: auto; margin-left: 0.5rem;">
+        <span style="margin-right: 0.5rem; font-size: 1.1em;">💬</span>
+        <span style="font-size: 0.9em;">書評</span>
+    </a>
+    {{ end }}
+
     <hr style="border: 0; border-top: 1px solid var(--gray-300); margin: 0.5rem 0;">
 </div>
