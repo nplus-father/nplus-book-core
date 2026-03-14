@@ -228,3 +228,15 @@ html[data-theme="dark"] a.amazon-link {
     background-color: rgba(255, 173, 51, 0.15);
   }
 }
+
+/* Reviewed checkmark in sidebar */
+.reviewed-check {
+  margin-left: 0.3rem;
+  color: #22c55e;
+  font-weight: 600;
+  font-size: 0.85em;
+}
+
+html[data-theme="dark"] .reviewed-check {
+  color: #4ade80;
+}
