@@ -5,7 +5,17 @@
         <span style="font-weight: bold; font-family: monospace;">恩普拉氏</span>
     </a>
 
-    {{ with site.Params.reviewUrl }}
+    {{- $reviewURL := "" -}}
+    {{- with site.Params.reviewUrl -}}
+        {{- $reviewURL = . -}}
+    {{- else -}}
+        {{- $slug := site.BaseURL | strings.TrimSuffix "/" | path.Base -}}
+        {{- if and $slug (ne $slug "nplus.wiki") (ne $slug "/") -}}
+            {{- $reviewURL = printf "https://nplus.wiki/reviews/%s/" $slug -}}
+        {{- end -}}
+    {{- end -}}
+
+    {{ with $reviewURL }}
     <a href="{{ . }}" class="book-btn" target="_blank" rel="noopener noreferrer"
        style="display: inline-flex; width: auto; margin-left: 0.5rem;">
         <span style="margin-right: 0.5rem; font-size: 1.1em;">💬</span>
