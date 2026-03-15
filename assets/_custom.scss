@@ -125,6 +125,21 @@ header.book-header {
   }
 }
 
+/* Menu top bar buttons (back + review) */
+.menu-top-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.3rem;
+}
+
+.book-btn-icon {
+  padding: 0.3rem 0.5rem;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
 /* =========================================
    5. Book Cover Component
    ========================================= */

@@ -1,27 +1,25 @@
-<div style="margin-bottom: 1rem;">
-    <a href="https://nplus.wiki" class="book-btn"
-       style="display: inline-flex; width: auto;">
-        <span style="margin-right: 0.5rem; font-size: 1.1em;">🔙</span>
-        <span style="font-weight: bold; font-family: monospace;">恩普拉氏</span>
-    </a>
+<div class="menu-top-bar">
+    <div class="menu-top-buttons">
+        <a href="https://nplus.wiki" class="book-btn book-btn-icon" title="回到恩普拉氏">
+            🔙
+        </a>
 
-    {{- $reviewURL := "" -}}
-    {{- with site.Params.reviewUrl -}}
-        {{- $reviewURL = . -}}
-    {{- else -}}
-        {{- $slug := site.BaseURL | strings.TrimSuffix "/" | path.Base -}}
-        {{- if and $slug (ne $slug "nplus.wiki") (ne $slug "/") -}}
-            {{- $reviewURL = printf "https://nplus.wiki/reviews/%s/" $slug -}}
+        {{- if site.Params.hasReview -}}
+            {{- $reviewURL := "" -}}
+            {{- with site.Params.reviewUrl -}}
+                {{- $reviewURL = . -}}
+            {{- else -}}
+                {{- $slug := site.BaseURL | strings.TrimSuffix "/" | path.Base -}}
+                {{- if and $slug (ne $slug "nplus.wiki") (ne $slug "/") -}}
+                    {{- $reviewURL = printf "https://nplus.wiki/reviews/%s/" $slug -}}
+                {{- end -}}
+            {{- end -}}
+            {{- with $reviewURL -}}
+            <a href="{{ . }}" class="book-btn book-btn-icon" target="_blank" rel="noopener noreferrer" title="書評">
+                💬
+            </a>
+            {{- end -}}
         {{- end -}}
-    {{- end -}}
-
-    {{ with $reviewURL }}
-    <a href="{{ . }}" class="book-btn" target="_blank" rel="noopener noreferrer"
-       style="display: inline-flex; width: auto; margin-left: 0.5rem;">
-        <span style="margin-right: 0.5rem; font-size: 1.1em;">💬</span>
-        <span style="font-size: 0.9em;">書評</span>
-    </a>
-    {{ end }}
-
+    </div>
     <hr style="border: 0; border-top: 1px solid var(--gray-300); margin: 0.5rem 0;">
 </div>
