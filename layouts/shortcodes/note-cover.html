@@ -1,0 +1,74 @@
+{{/*
+  note-cover — hero-style cover card for integrated notes (multi-source).
+
+  Parameters:
+    title       (required)  Note / topic title
+    src         (optional)  Cover image. Page Bundle resource, static path, or absolute URL.
+    tags        (optional)  Comma-separated tag chips.
+    doc1..doc5  (optional)  External reference URLs.
+    docText1..5 (optional)  Display text for each doc link (defaults to "Link N").
+    Inner       (optional)  Markdown description body.
+
+  Styles live in nplus-book-core/assets/_custom.scss under `.note-cover`.
+*/}}
+
+{{ $title := .Get "title" }}
+{{ $src   := .Get "src" }}
+{{ $tags  := .Get "tags" }}
+
+{{/* Resolve image: Page Bundle resource → fallback to raw path / URL */}}
+{{ $imgRel := "" }}
+{{ with $src }}
+  {{ $resource := $.Page.Resources.GetMatch . }}
+  {{ if $resource }}
+    {{ $imgRel = $resource.RelPermalink }}
+  {{ else }}
+    {{ $imgRel = . }}
+  {{ end }}
+{{ end }}
+
+{{/* Collect non-empty doc links once, in order */}}
+{{ $links := slice }}
+{{ range seq 1 5 }}
+  {{ $href := $.Get (printf "doc%d" .) }}
+  {{ if $href }}
+    {{ $text := $.Get (printf "docText%d" .) | default (printf "Link %d" .) }}
+    {{ $links = $links | append (dict "href" $href "text" $text) }}
+  {{ end }}
+{{ end }}
+
+<div class="note-cover">
+    <div class="note-cover__image">
+        {{ if $imgRel }}
+        <img src="{{ $imgRel }}" alt="{{ $title }} 封面" loading="lazy" decoding="async">
+        {{ else }}
+        <div class="note-cover__no-image">無封面</div>
+        {{ end }}
+    </div>
+
+    <div class="note-cover__content">
+        {{ with $tags }}
+        <div class="note-cover__tags">
+            {{ range split . "," }}
+            <span class="note-cover__tag">{{ trim . " " }}</span>
+            {{ end }}
+        </div>
+        {{ end }}
+
+        <h2 class="note-cover__title">{{ $title }}</h2>
+
+        {{ with .Inner }}
+        <div class="note-cover__description">{{ . | markdownify }}</div>
+        {{ end }}
+
+        {{ with $links }}
+        <div class="note-cover__actions">
+            {{ range . }}
+            <a href="{{ .href }}" target="_blank" rel="noopener" class="note-cover__btn">
+                🔗 {{ .text }}
+            </a>
+            {{ end }}
+        </div>
+        {{ end }}
+    </div>
+</div>

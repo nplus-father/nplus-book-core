@@ -255,3 +255,129 @@ html[data-theme="dark"] a.amazon-link {
 html[data-theme="dark"] .reviewed-check {
   color: #4ade80;
 }
+
+/* ------------------------------------------------------------------ */
+/* note-cover shortcode                                                */
+/* Hero-style cover card for integrated notes (multi-source topics).   */
+/* Companion to .book-meta-card (single-book layout).                  */
+/* ------------------------------------------------------------------ */
+
+.note-cover {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background-color: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+  box-shadow: var(--card-shadow);
+  align-items: center;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+.note-cover__image {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 320px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--img-shadow);
+  background-color: var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+  }
+}
+
+.note-cover__no-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-500);
+  font-size: 0.9em;
+}
+
+.note-cover__content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.note-cover__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+
+.note-cover__tag {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  background: var(--gray-200);
+  color: var(--meta-color);
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.note-cover__title {
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--body-text);
+}
+
+.note-cover__description {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--body-text);
+  margin-bottom: 0.5rem;
+}
+
+.note-cover__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--gray-300);
+}
+
+.note-cover__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  background-color: var(--btn-bg);
+  color: var(--btn-text) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background-color: var(--btn-hover-bg);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  }
+}
