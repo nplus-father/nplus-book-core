@@ -1,6 +1,10 @@
 [params]
 BookFavicon = "logo.png"
 
+# 首頁多輸出一份 JSON → /index.json（review 進度索引，供 portal 匯總）
+[outputs]
+home = ["HTML", "JSON"]
+
 [module]
 [[module.imports]]
 path = "github.com/alex-shpak/hugo-book"

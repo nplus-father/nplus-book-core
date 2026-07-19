@@ -1,0 +1,26 @@
+{{- /*
+  星系共用：每本 handbook build 出 /index.json，供 nplus-father portal 匯總「已 review」進度。
+  reviewable 單位 = docs/ 底下每個 _index.md（一個主題頁）。
+  某頁「已 review」的判準：frontmatter 有 `reviewed: true`（可再加 `reviewedDate: "YYYY-MM-DD"`）。
+  未設 = 未 review（乾淨基線，不需逐頁 stamp）。
+*/ -}}
+{{- $items := slice -}}
+{{- range where site.Pages "Section" "docs" -}}
+  {{- if .File -}}
+    {{- $items = $items | append (dict
+        "id" .File.Path
+        "title" .Title
+        "url" .Permalink
+        "weight" .Weight
+        "reviewed" (.Params.reviewed | default false)
+        "reviewedDate" (.Params.reviewedDate | default "")
+    ) -}}
+  {{- end -}}
+{{- end -}}
+{{- dict
+    "station" (path.Base (strings.TrimSuffix "/" site.BaseURL))
+    "brand" site.Title
+    "kind" "handbook"
+    "count" (len $items)
+    "items" $items
+  | jsonify (dict "indent" "  ") -}}
