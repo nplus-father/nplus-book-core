@@ -1,19 +1,24 @@
 {{- /*
-  星系共用：每本 handbook build 出 /index.json，供 nplus-father portal 匯總「已 review」進度。
-  reviewable 單位 = docs/ 底下每個 _index.md（一個主題頁）。
-  某頁「已 review」的判準：frontmatter 有 `reviewed: true`（可再加 `reviewedDate: "YYYY-MM-DD"`）。
+  星系共用：每本 handbook / 書 build 出 /index.json，供 nplus-father portal 匯總「已 review」進度。
+  reviewable 單位 = docs/ 底下每個 _index.md（一個主題頁）；每筆另帶 `leaf`
+  （true = 底下沒有子頁，即真正的葉章節），讓消費端自行決定要算全部頁或只算葉章節。
+  某頁「已 review」的判準：frontmatter `reviewed: true`（可再加 `reviewedDate: "YYYY-MM-DD"`）。
+  books-done 的 Hugo 書用 `read` / `readAt` 慣例，這裡一併吃並映射到同樣的欄位。
   未設 = 未 review（乾淨基線，不需逐頁 stamp）。
 */ -}}
 {{- $items := slice -}}
 {{- range where site.Pages "Section" "docs" -}}
   {{- if .File -}}
+    {{- $reviewed := or (eq .Params.reviewed true) (eq .Params.read true) -}}
+    {{- $reviewedDate := or .Params.reviewedDate .Params.readAt | default "" -}}
     {{- $items = $items | append (dict
         "id" .File.Path
         "title" .Title
         "url" .Permalink
         "weight" .Weight
-        "reviewed" (.Params.reviewed | default false)
-        "reviewedDate" (.Params.reviewedDate | default "")
+        "leaf" (eq (len .Pages) 0)
+        "reviewed" $reviewed
+        "reviewedDate" $reviewedDate
     ) -}}
   {{- end -}}
 {{- end -}}
