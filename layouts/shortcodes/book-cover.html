@@ -1,7 +1,39 @@
+{{/*
+  封面縮圖在 build 時產生：原圖是 500×757 的 PNG（實測 350KB 上下），
+  但 .book-cover-img-wrapper 只有 max-width 180px，等於讓每位讀者為看不到的
+  像素付 300KB 以上。這裡縮成 360px 寬（180 的 2× DPI）的 WebP，約 15KB。
+
+  用 Hugo 內建處理而不是外部圖片代理：圖就在本 repo 的 page bundle 裡，build
+  時處理不需要第三方、不需要執行期請求，產物也跟站台同源。
+  （筆記站的書架情況不同——那裡的圖在別的 repo、別的網域，只能走代理。）
+
+  **原始 cover.png 仍會照常發佈到 /cover.png**：它是 page bundle 的資源，
+  Hugo 一律複製到 public/，與這裡有沒有引用無關。portal 與 62 個筆記站都靠
+  那個網址取書封，不能斷——改動後務必確認 public/cover.png 還在。
+
+  只在原圖比 360px 寬時才縮，否則保持原樣（避免把小圖放大反而變胖）。
+  非圖片資源或外部 URL 一律原樣輸出。
+*/}}
+{{ $src := .Get "src" }}
+{{ $img := "" }}
+{{ $w := 0 }}
+{{ $h := 0 }}
+{{ with $src }}
+    {{ $img = . }}
+    {{ $res := $.Page.Resources.GetMatch . }}
+    {{ if and $res (eq $res.ResourceType "image") }}
+        {{ $target := cond (gt $res.Width 360) 360 $res.Width }}
+        {{ $small := $res.Resize (printf "%dx webp q80" $target) }}
+        {{ $img = $small.RelPermalink }}
+        {{ $w = $small.Width }}
+        {{ $h = $small.Height }}
+    {{ end }}
+{{ end }}
 <div class="book-meta-card">
     <div class="book-cover-img-wrapper">
-        {{ if .Get "src" }}
-        <img src="{{ .Get "src" }}" alt="{{ .Get "title" }} 封面">
+        {{ if $img }}
+        <img src="{{ $img }}" alt="{{ .Get "title" }} 封面" loading="lazy" decoding="async"
+            {{ with $w }}width="{{ . }}"{{ end }}{{ with $h }} height="{{ . }}"{{ end }}>
         {{ else }}
         <div class="book-no-cover">
             無封面
