@@ -43,9 +43,11 @@ Your Markdown summary here.
 Supports standard GitHub-style alerts:
 
 > [!NOTE]
+>
 > Use this for general notes.
 
 > [!TIP]
+>
 > Use this for helpful tips.
 
 ## 🎨 Maintenance
