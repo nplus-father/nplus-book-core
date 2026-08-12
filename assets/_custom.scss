@@ -175,10 +175,19 @@ a {
   }
 }
 
+/* 手機是單欄，封面在最上面。先前它靠左、卡在 232px，於是整頁最好看的素材
+   縮在左上角、右邊留一大塊空白。窄螢幕改成置中並放大到 68vw，寬螢幕才回到
+   232px 的側欄尺寸（那時它本來就在自己的格子裡，置中反而會離內文太遠）。 */
 .book-hero__cover {
   width: 100%;
-  max-width: 232px;
+  max-width: min(280px, 68vw);
+  margin-inline: auto;
   overflow: hidden;
+
+  @media (min-width: 640px) {
+    max-width: 232px;
+    margin-inline: 0;
+  }
   border-radius: 2px;
   background-color: var(--surface-2);
   /* 投射式陰影：書立在紙上，而不是貼在卡片裡 */
@@ -293,23 +302,25 @@ a {
   }
 }
 
+/* 先前這排是 overflow-x:auto 的底線式分頁。兩個問題：底線太安靜，四個段名讀
+   起來像小標而不是可按的東西；而 overflow-x 讓整排在手機上可以被拖動晃來晃去，
+   桌機則多出一條沒必要的捲軸。改成會換行的實體按鈕，寬度不夠就折行，不捲動。 */
 .book-overview__tabs {
   display: flex;
-  gap: 0;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   background-color: var(--surface);
   border-bottom: 1px solid var(--border);
-  scrollbar-width: thin;
 }
 
 .book-overview__tab {
   flex: 0 0 auto;
   appearance: none;
-  border: 0;
-  margin-bottom: -1px;
-  padding: 0.85rem 1.1rem;
-  border-bottom: 2px solid transparent;
-  background: none;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg);
   color: var(--text-muted);
   font: inherit;
   font-size: var(--text-sm);
@@ -323,13 +334,15 @@ a {
 
   &:hover {
     color: var(--text);
-    background-color: var(--surface-2);
+    border-color: var(--text-muted);
   }
 
+  /* 選中的那個直接填色：--link 與 --bg 在明暗兩套主題下互為對比色
+     （亮色 #0b5ed7 配白、暗色 #6cb6ff 配 #1b1f23），都過 AA。 */
   &[aria-selected="true"] {
-    color: var(--text);
-    background-color: var(--bg);
-    border-bottom-color: var(--link);
+    color: var(--bg);
+    background-color: var(--link);
+    border-color: var(--link);
   }
 }
 
