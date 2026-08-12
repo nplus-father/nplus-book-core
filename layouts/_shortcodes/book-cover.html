@@ -29,52 +29,45 @@
         {{ $h = $small.Height }}
     {{ end }}
 {{ end }}
-<div class="book-meta-card">
-    <div class="book-cover-img-wrapper">
+{{/*
+  版面：封面立在頁面上，不再包一層卡片。
+
+  先前是「卡片包封面」——封面自己有圓角與陰影，外面再套一個有框、有底色、有
+  陰影的容器，等於在框裡再畫一個框，而整頁最好看的素材（封面）反而被壓到
+  180px。現在封面放到 232px、用投射式陰影，其餘資訊靠留白分組。
+
+  標題改成 h1：這頁先前完全沒有 h1（卡片標題是 h2），文件結構從 h2 開始。
+  書名就是這一頁的主標題。
+*/}}
+<div class="book-hero">
+    <div class="book-hero__cover">
         {{ if $img }}
         <img src="{{ $img }}" alt="{{ .Get "title" }} 封面" loading="lazy" decoding="async"
             {{ with $w }}width="{{ . }}"{{ end }}{{ with $h }} height="{{ . }}"{{ end }}>
         {{ else }}
-        <div class="book-no-cover">
-            無封面
-        </div>
+        <div class="book-hero__no-cover">無封面</div>
         {{ end }}
     </div>
 
-    <div class="book-info">
-        <h2 class="book-title">{{ .Get "title" }}</h2>
+    <div class="book-hero__body">
+        <h1 class="book-hero__title">{{ .Get "title" }}</h1>
 
-        {{/*
-          emoji 是裝飾，不是標籤。先前寫成 <span>👨‍💼: </span>，螢幕閱讀器會唸
-          出「男性上班族 冒號」再接作者名。改成 aria-hidden 的 emoji 配一個
-          真正的文字標籤。
-        */}}
-        <div class="book-meta-row">
-            <span class="book-meta-label"><span aria-hidden="true">👤</span> 作者</span>
-            <span class="book-meta-value">{{ .Get "author" }}</span>
-        </div>
+        {{/* 作者與出版日收成一行。兩個欄位不需要表格式排版，也不需要 emoji
+             說明「這是作者」「這是日期」。 */}}
+        <p class="book-hero__meta">
+            <span>{{ .Get "author" }}</span>
+            {{- with .Get "date" }}<span class="book-hero__sep" aria-hidden="true">·</span><span>{{ . }}</span>{{ end -}}
+        </p>
 
-        {{ with .Get "date" }}
-        <div class="book-meta-row">
-            <span class="book-meta-label"><span aria-hidden="true">📅</span> 出版</span>
-            <span class="book-meta-value">{{ . }}</span>
-        </div>
+        {{ with .Inner }}
+        {{/* 簡介就是導言，位置本身已說明它是什麼，不需要「📖 簡介」標籤 */}}
+        <div class="book-hero__lede">{{ . | markdownify }}</div>
         {{ end }}
 
         {{ with .Get "link" }}
         {{/* target="_blank" 必須配 rel="noopener noreferrer"，否則新分頁可以
-             透過 window.opener 操作原頁（reverse tabnabbing）。render-link.html
-             有做，這個 shortcode 先前漏了。 */}}
-        <a href="{{ . }}" class="book-btn" target="_blank" rel="noopener noreferrer">
-            <span aria-hidden="true">🛒</span> 購買本書
-        </a>
-        {{ end }}
-
-        {{ with .Inner }}
-        <div class="book-summary">
-            <span class="book-summary__label"><span aria-hidden="true">📖</span> 簡介</span>
-            {{ . | markdownify }}
-        </div>
+             透過 window.opener 操作原頁（reverse tabnabbing）。 */}}
+        <a class="book-hero__buy" href="{{ . }}" target="_blank" rel="noopener noreferrer">在 Amazon 上查看</a>
         {{ end }}
     </div>
 </div>

@@ -22,3 +22,95 @@
     }
   })();
 </script>
+
+{{/*
+  book-overview 的漸進增強：把 shortcode 輸出的四個 h2 區段收成分頁。
+  伺服器端輸出的永遠是完整可讀的四段，這段只負責收攏；失敗就維持原樣。
+*/}}
+<script defer>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-book-overview]').forEach(function (root, idx) {
+      var heads = Array.prototype.filter.call(root.children, function (el) {
+        return el.tagName === 'H2';
+      });
+      if (heads.length < 2) return; /* 一段以下不值得做成分頁 */
+
+      var groups = heads.map(function (h) {
+        var nodes = [h];
+        var n = h.nextElementSibling;
+        while (n && n.tagName !== 'H2') {
+          nodes.push(n);
+          n = n.nextElementSibling;
+        }
+        /* 主題會在標題末尾插一個 <a class="anchor">#</a>，取名字時要排除它，
+           否則分頁會叫「完整摘要#」。 */
+        var name = '';
+        Array.prototype.forEach.call(h.childNodes, function (n) {
+          if (n.nodeType === 3) name += n.nodeValue;
+          else if (n.nodeType === 1 && !n.classList.contains('anchor')) name += n.textContent;
+        });
+        return { title: name.trim(), nodes: nodes };
+      });
+
+      var tablist = document.createElement('div');
+      tablist.className = 'book-overview__tabs';
+      tablist.setAttribute('role', 'tablist');
+      tablist.setAttribute('aria-label', '深度概覽');
+
+      var wanted = root.getAttribute('data-default') || '';
+      var active = groups.findIndex(function (g) { return g.title === wanted; });
+      if (active < 0) active = 0;
+
+      var tabs = [];
+      var panels = [];
+
+      groups.forEach(function (g, i) {
+        var pid = 'bov-' + idx + '-p' + i;
+        var tid = 'bov-' + idx + '-t' + i;
+
+        var panel = document.createElement('div');
+        panel.className = 'book-overview__panel';
+        panel.id = pid;
+        panel.setAttribute('role', 'tabpanel');
+        panel.setAttribute('aria-labelledby', tid);
+        panel.tabIndex = 0;
+        g.nodes.forEach(function (n) { panel.appendChild(n); });
+        panels.push(panel);
+
+        var tab = document.createElement('button');
+        tab.className = 'book-overview__tab';
+        tab.type = 'button';
+        tab.id = tid;
+        tab.setAttribute('role', 'tab');
+        tab.setAttribute('aria-controls', pid);
+        tab.textContent = g.title;
+        tabs.push(tab);
+        tablist.appendChild(tab);
+      });
+
+      function select(i) {
+        tabs.forEach(function (t, j) {
+          t.setAttribute('aria-selected', j === i ? 'true' : 'false');
+          t.tabIndex = j === i ? 0 : -1;
+          panels[j].hidden = j !== i;
+        });
+      }
+
+      tabs.forEach(function (tab, i) {
+        tab.addEventListener('click', function () { select(i); });
+        tab.addEventListener('keydown', function (e) {
+          var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+          if (!d) return;
+          e.preventDefault();
+          var next = (i + d + tabs.length) % tabs.length;
+          tabs[next].focus();
+          select(next);
+        });
+      });
+
+      root.appendChild(tablist);
+      panels.forEach(function (p) { root.appendChild(p); });
+      select(active);
+    });
+  });
+</script>

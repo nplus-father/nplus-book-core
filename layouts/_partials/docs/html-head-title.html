@@ -1,0 +1,11 @@
+{{/*
+  上游是 `{{ 頁名 }} • {{ 站名 }}`，但書本站台的首頁頁名就等於站名，於是輸出
+  變成「理想國 • 理想國」。這裡在兩者相同時只印一次。
+*/}}
+{{- $page := partial "docs/title" . -}}
+{{- $site := .Site.Title -}}
+{{- if and $page (ne $page $site) -}}
+  {{- printf "%s • %s" $page $site -}}
+{{- else -}}
+  {{- $site -}}
+{{- end -}}

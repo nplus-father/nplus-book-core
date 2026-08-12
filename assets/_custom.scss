@@ -96,15 +96,58 @@ a {
   font-size: var(--text-lg);
 }
 
-.menu-top-bar {
-  margin-bottom: var(--space-2);
+/* ------------------------------------------------------------------ */
+/* 側欄工具列                                                            */
+/* 側欄本體是一串安靜的連結，chrome 應該比內容更輕而不是更重——所以不做      */
+/* 成有框有底的藥丸按鈕，平時是次要色，滑過才浮起來。                       */
+/* ------------------------------------------------------------------ */
+
+.menu-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-wrap: wrap;
+  margin: 0.1rem 0 0.2rem;
 }
 
-.menu-top-buttons {
-  display: flex;
-  flex-direction: row;
+.menu-tool {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 0.32rem;
+  padding: var(--space-1) 0.45rem;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--text-xs);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease),
+    background-color var(--motion-fast) var(--ease);
+
+  &:hover {
+    color: var(--text);
+    background-color: var(--surface-2);
+    text-decoration: none;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+/* 切換佈景只有圖示，推到最右 */
+.menu-tool--icon {
+  margin-left: auto;
 }
 
 .menu-divider {
@@ -114,42 +157,34 @@ a {
   background-color: var(--border);
 }
 
-.menu-bottom-bar {
-  margin-top: var(--space-6);
-  padding-top: var(--space-4);
-  border-top: 1px solid var(--border);
-}
-
 /* ------------------------------------------------------------------ */
-/* book-cover：單本書的封面卡                                            */
+/* book-cover：書籍頁的開場                                              */
+/* 封面立在頁面上，不包卡片——封面本身已有形狀與陰影，外面再加框只是         */
+/* 在框裡畫框，而且會把整頁最好看的素材壓小。                              */
 /* ------------------------------------------------------------------ */
 
-.book-meta-card {
-  display: flex;
-  flex-direction: column;
+.book-hero {
+  display: grid;
   gap: var(--space-5);
   margin-bottom: var(--space-6);
-  padding: var(--space-5);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background-color: var(--surface);
-  box-shadow: var(--shadow-sm);
 
-  @media (min-width: 768px) {
-    flex-direction: row;
-    align-items: flex-start;
+  @media (min-width: 640px) {
+    grid-template-columns: 232px 1fr;
+    gap: var(--space-6) 2.75rem;
+    align-items: start;
   }
 }
 
-.book-cover-img-wrapper {
-  flex-shrink: 0;
+.book-hero__cover {
   width: 100%;
-  max-width: 180px;
-  margin: 0 auto;
+  max-width: 232px;
   overflow: hidden;
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
   background-color: var(--surface-2);
-  box-shadow: var(--shadow-md);
+  /* 投射式陰影：書立在紙上，而不是貼在卡片裡 */
+  box-shadow:
+    0 12px 28px -12px rgba(16, 22, 26, 0.45),
+    0 2px 6px rgba(16, 22, 26, 0.12);
 
   img {
     display: block;
@@ -158,66 +193,175 @@ a {
   }
 }
 
+:root[data-theme="dark"] .book-hero__cover,
+:root:not([data-theme="light"]) .book-hero__cover {
+  box-shadow:
+    0 12px 28px -12px rgba(0, 0, 0, 0.75),
+    0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
 /* 先前是 --gray-300 字疊在 --gray-200 底上，對比 1.10:1，「無封面」等於隱形 */
-.book-no-cover {
+.book-hero__no-cover {
   display: flex;
   align-items: center;
   justify-content: center;
   aspect-ratio: 2 / 3;
-  background-color: var(--surface-2);
   color: var(--text-muted);
   font-size: var(--text-sm);
 }
 
-.book-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  flex-grow: 1;
+.book-hero__body {
   min-width: 0;
 }
 
-.book-title {
-  margin-top: 0;
-  margin-bottom: var(--space-2);
-  font-size: var(--text-xl);
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--text);
-}
-
-/* 作者／出版日兩列。emoji 是裝飾（aria-hidden），真正的標籤是旁邊的文字。 */
-.book-meta-row {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}
-
-.book-meta-label {
-  flex-shrink: 0;
-}
-
-.book-meta-value {
-  color: var(--text);
-  font-weight: 500;
-}
-
-.book-summary {
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
-  border-top: 1px dashed var(--border);
-  font-size: var(--text-sm);
-  line-height: 1.7;
-  color: var(--text);
-}
-
-.book-summary__label {
-  display: block;
-  margin-bottom: var(--space-1);
-  color: var(--text-muted);
+.book-hero__title {
+  margin: -0.35rem 0 var(--space-3);
+  font-family: var(--font-serif);
+  font-size: clamp(1.9rem, 3.4vw, var(--text-3xl));
   font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--text);
+}
+
+.book-hero__meta {
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.book-hero__sep {
+  padding: 0 0.45rem;
+  color: var(--border);
+}
+
+.book-hero__lede {
+  max-width: 34rem;
+  margin-bottom: var(--space-5);
+  font-size: var(--text-lg);
+  line-height: 1.75;
+  color: var(--text);
+
+  p {
+    margin: 0;
+  }
+}
+
+.book-hero__buy {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--accent);
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+
+  &:hover {
+    color: var(--accent-hover);
+    text-decoration: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* book-overview：四段深度概覽的分頁容器                                  */
+/*                                                                     */
+/* 未經 JS 增強時（.is-tabbed 還沒被加上）就是一般的章節堆疊，四段全部可見。 */
+/* 這是刻意的：內容不能只存在於 JS 打開後的狀態。                          */
+/* ------------------------------------------------------------------ */
+
+.book-overview {
+  margin: var(--space-6) 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--bg);
+
+  /* 未增強狀態：h2 當一般小標，內距撐開 */
+  > h2 {
+    margin: var(--space-5) var(--space-5) var(--space-2);
+    font-family: var(--font-serif);
+    font-size: var(--text-lg);
+    font-weight: 600;
+  }
+
+  > p,
+  > ul,
+  > ol,
+  > blockquote,
+  > table {
+    margin-left: var(--space-5);
+    margin-right: var(--space-5);
+  }
+}
+
+.book-overview__tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: thin;
+}
+
+.book-overview__tab {
+  flex: 0 0 auto;
+  appearance: none;
+  border: 0;
+  margin-bottom: -1px;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--motion-fast) var(--ease),
+    border-color var(--motion-fast) var(--ease),
+    background-color var(--motion-fast) var(--ease);
+
+  &:hover {
+    color: var(--text);
+    background-color: var(--surface-2);
+  }
+
+  &[aria-selected="true"] {
+    color: var(--text);
+    background-color: var(--bg);
+    border-bottom-color: var(--link);
+  }
+}
+
+.book-overview__panel {
+  padding: var(--space-5) var(--space-5) var(--space-6);
+
+  &[hidden] {
+    display: none;
+  }
+
+  /* 面板內的標題已由分頁按鈕代表，隱藏起來但留給螢幕閱讀器與無 JS 狀態 */
+  > h2 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  > p {
+    max-width: 36rem;
+    margin: 0 0 var(--space-4);
+    line-height: 1.8;
+  }
+
+  > p:last-child {
+    margin-bottom: 0;
+  }
 }
 
 /* ------------------------------------------------------------------ */
