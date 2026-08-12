@@ -1,73 +1,166 @@
-/* nplus-book-core/assets/_variables.scss */
+/* nplus-book-core/assets/_variables.scss
+ *
+ * 全站唯一的 design token 來源。`_custom.scss` 只寫元件樣式，不要再宣告 :root。
+ *
+ * 擴充方式是「重新定義 theme mixin」，不是再宣告一次 :root。原因在 hugo-book 的
+ * book.scss：
+ *     @import "defaults";                    // 1  上游定義 theme-light / theme-dark
+ *     @import "variables";                   // 2  ← 本檔，在這裡覆蓋掉那兩個 mixin
+ *     ...
+ *     @import "custom";                      // 14
+ *     :root { @include theme-{BookTheme}; }  // 18 ← 最後才展開，所以它會用本檔的版本
+ *
+ * 第 18 行在所有 @import 之後，且選擇器同為 :root。先前的作法是在 _custom.scss
+ * 再寫一次 :root，結果被第 18 行蓋掉；而 _variables.scss 又和 _custom.scss 重複
+ * 定義了 22 個 token（21 個值不同），兩層互相覆蓋且沒有任何錯誤訊息。
+ *
+ * 因為 mixin 同時輸出「上游的變數名」與「我們的語意名」，上游元件（側欄、
+ * markdown、hint）會自動跟著這套色盤走，不必用 !important 硬壓。
+ */
 
-/* --- 1. 原始色盤 --- */
-$white:    #ffffff;
-$black:    #000000;
+/* ------------------------------------------------------------------ */
+/* 色階。所有前景／背景組合都通過 WCAG AA（正文 4.5:1），註解標的是實測值 */
+/* ------------------------------------------------------------------ */
 
-$gray-100: #f8f9fa;
-$gray-200: #e9ecef;
-$gray-300: #dee2e6;
-$gray-500: #6c757d;
-$gray-800: #343a40;
-$gray-900: #212529;
+@mixin theme-light {
+  /* --- 我們的語意 token --- */
+  --bg:           #ffffff;
+  --surface:      #f7f8fa;   /* 卡片、側欄底 */
+  --surface-2:    #eef1f5;   /* 卡片內次級區塊、tag */
+  --text:         #1f2328;   /* 15.8:1 on bg */
+  --text-muted:   #5a6169;   /*  6.3:1 on bg */
+  --border:       #d8dee4;
+  --link:         #0b5ed7;   /*  5.8:1 on bg */
+  --link-hover:   #0a4fb5;
+  --accent:       #8a5a00;   /*  5.9:1 on bg — 購買連結 */
+  --accent-hover: #6d4700;
+  --accent-wash:  rgba(138, 90, 0, 0.10);
+  --success:      #136c39;   /*  6.5:1 on bg — 已讀勾勾 */
 
-/* 調整後的藍色系 */
-$blue-soft:  #e7f1ff; /* 新增：給 Light Mode 用，很淡的藍色 */
-$blue-500:   #0055bb; /* 原本的深藍 */
-$blue-400:   #3b82f6; /* Dark Mode 用 */
+  --btn-bg:       #eef1f5;
+  --btn-bg-hover: #e2e7ee;
+  --btn-text:     #1f2328;
 
-/* --- 2. 主題映射 --- */
+  --shadow-sm:    0 1px 2px rgba(16, 22, 26, 0.06);
+  --shadow-md:    0 2px 8px rgba(16, 22, 26, 0.08);
+  --shadow-lg:    0 8px 24px rgba(16, 22, 26, 0.12);
 
-:root {
-  /* Light Mode */
-  --body-bg:            #{$white};
-  --body-text:          #{$gray-900};
+  /* --- 上游 hugo-book 用的變數名，指到同一組值 --- */
+  --body-background:      var(--bg);
+  --body-background-tint: none;
+  --body-font-color:      var(--text);
+  --color-link:           var(--link);
+  --color-visited-link:   #6b3fbf;
+  --gray-100:             var(--surface);
+  --gray-200:             var(--surface-2);
+  --gray-500:             var(--text-muted);
+  --icon-filter:          none;
 
-  --gray-100:           #{$gray-100};
-  --gray-200:           #{$gray-200};
-  --gray-300:           #{$gray-300};
-  --gray-500:           #{$gray-500};
+  color-scheme: light;
 
-  /* 【關鍵修改 1】Meta 文字顏色：Light Mode 用深色 ($gray-900) */
-  --meta-color:         #{$gray-900};
-
-  /* 功能色 */
-  --color-link:         #{$blue-500};
-
-  /* 【關鍵修改 2】Light Mode 按鈕：改用淡色背景 + 黑色文字 */
-  --btn-bg:             #{$blue-soft};
-  --btn-text:           #{$black};
-  --btn-hover-bg:       #d0e1fd;       /* 滑鼠懸停時稍微深一點 */
-
-  --icon-filter:        none;
-
-  --card-shadow:        0 4px 6px rgba(0, 0, 0, 0.05);
-  --img-shadow:         0 4px 8px rgba(0, 0, 0, 0.2);
+  /* hint / markdown alert 用色，沿用上游的比例 */
+  @include accent("default",   #64748b);
+  @include accent("note",      #2563eb);
+  @include accent("tip",       #15803d);
+  @include accent("important", #7c3aed);
+  @include accent("warning",   #b45309);
+  @include accent("caution",   #b91c1c);
+  @include accent("info",      #2563eb);
+  @include accent("success",   #15803d);
+  @include accent("danger",    #b91c1c);
 }
 
-html[data-theme="dark"] {
-  /* Dark Mode */
-  --body-bg:            #{$gray-900};
-  --body-text:          #{$gray-200};
+@mixin theme-dark {
+  --bg:           #1b1f23;
+  --surface:      #22272e;
+  --surface-2:    #2d333b;
+  --text:         #e6edf3;   /* 14.0:1 on bg */
+  --text-muted:   #9aa4ae;   /*  6.6:1 on bg */
+  --border:       #3d444d;
+  --link:         #6cb6ff;   /*  7.7:1 on bg */
+  --link-hover:   #9fd0ff;
+  --accent:       #e3a008;   /*  7.3:1 on bg */
+  --accent-hover: #f0b429;
+  --accent-wash:  rgba(227, 160, 8, 0.14);
+  --success:      #4ade80;   /*  9.5:1 on bg */
 
-  --gray-100:           rgba(255, 255, 255, 0.05);
-  --gray-200:           rgba(255, 255, 255, 0.15);
-  --gray-300:           rgba(255, 255, 255, 0.25);
-  --gray-500:           rgba(255, 255, 255, 0.60);
+  --btn-bg:       #2d333b;
+  --btn-bg-hover: #3a424c;
+  --btn-text:     #e6edf3;
 
-  /* 【關鍵修改 1】Meta 文字顏色：Dark Mode 維持灰色，避免太刺眼 */
-  --meta-color:         rgba(255, 255, 255, 0.70);
+  --shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-md:    0 2px 8px rgba(0, 0, 0, 0.40);
+  --shadow-lg:    0 8px 24px rgba(0, 0, 0, 0.50);
 
-  /* 功能色 */
-  --color-link:         #{$blue-400};
+  --body-background:      var(--bg);
+  --body-background-tint: none;
+  --body-font-color:      var(--text);
+  --color-link:           var(--link);
+  --color-visited-link:   #c9a4ff;
+  --gray-100:             var(--surface);
+  --gray-200:             var(--surface-2);
+  --gray-500:             var(--text-muted);
+  --icon-filter:          brightness(0) invert(1);
 
-  /* 【關鍵修改 2】Dark Mode 按鈕：維持深色背景 + 白色文字 */
-  --btn-bg:             #{$blue-400};
-  --btn-text:           #{$white};
-  --btn-hover-bg:       #60a5fa;
+  color-scheme: dark;
 
-  --icon-filter:        brightness(0) invert(1);
+  @include accent("default",   #8b98a8);
+  @include accent("note",      #6cb6ff);
+  @include accent("tip",       #56d364);
+  @include accent("important", #c9a4ff);
+  @include accent("warning",   #e3a008);
+  @include accent("caution",   #ff7b72);
+  @include accent("info",      #6cb6ff);
+  @include accent("success",   #56d364);
+  @include accent("danger",    #ff7b72);
+}
 
-  --card-shadow:        none;
-  --img-shadow:         0 4px 8px rgba(0, 0, 0, 0.5);
+/* ------------------------------------------------------------------ */
+/* 尺度：圓角、字級、間距、動態                                          */
+/* 這些與主題無關，直接宣告即可。先前散在各處——4 種圓角、4 套陰影、       */
+/* 7 個字級，各寫各的。                                                  */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --radius-sm:  4px;    /* 圖片、tag */
+  --radius-md:  8px;    /* 按鈕 */
+  --radius-lg: 12px;    /* 卡片 */
+
+  --text-xs:   0.8125rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.375rem;
+  --text-2xl:  1.75rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+/* 系統偏好。必須存在——切換主題是靠 JS 寫 data-theme，JS 被擋或尚未執行時
+ * 只剩這條規則撐著，否則深色模式使用者會先吃到一整頁白色。
+ * `:not([data-theme="light"])` 讓明確選過淺色的人不被系統設定蓋掉。 */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    @include theme-dark;
+  }
+}
+
+/* 明確切換勝過系統偏好，兩個方向都要寫 */
+:root[data-theme="dark"]  { @include theme-dark; }
+:root[data-theme="light"] { @include theme-light; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+  }
 }

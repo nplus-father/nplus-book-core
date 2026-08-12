@@ -44,27 +44,37 @@
     <div class="book-info">
         <h2 class="book-title">{{ .Get "title" }}</h2>
 
+        {{/*
+          emoji 是裝飾，不是標籤。先前寫成 <span>👨‍💼: </span>，螢幕閱讀器會唸
+          出「男性上班族 冒號」再接作者名。改成 aria-hidden 的 emoji 配一個
+          真正的文字標籤。
+        */}}
         <div class="book-meta-row">
-            <span>👨‍💼: </span>
-            <strong>{{ .Get "author" }}</strong>
+            <span class="book-meta-label"><span aria-hidden="true">👤</span> 作者</span>
+            <span class="book-meta-value">{{ .Get "author" }}</span>
         </div>
 
-        {{ if .Get "date" }}
+        {{ with .Get "date" }}
         <div class="book-meta-row">
-            <span>📅: </span>
-            <span>{{ .Get "date" }}</span>
+            <span class="book-meta-label"><span aria-hidden="true">📅</span> 出版</span>
+            <span class="book-meta-value">{{ . }}</span>
         </div>
         {{ end }}
 
-        {{ if .Get "link" }}
-        <a href="{{ .Get "link" }}" target="_blank" class="book-btn">
-        Buy Now
+        {{ with .Get "link" }}
+        {{/* target="_blank" 必須配 rel="noopener noreferrer"，否則新分頁可以
+             透過 window.opener 操作原頁（reverse tabnabbing）。render-link.html
+             有做，這個 shortcode 先前漏了。 */}}
+        <a href="{{ . }}" class="book-btn" target="_blank" rel="noopener noreferrer">
+            <span aria-hidden="true">🛒</span> 購買本書
         </a>
         {{ end }}
 
+        {{ with .Inner }}
         <div class="book-summary">
-            <strong>📖： </strong><br>
-            {{ .Inner | markdownify }}
+            <span class="book-summary__label"><span aria-hidden="true">📖</span> 簡介</span>
+            {{ . | markdownify }}
         </div>
+        {{ end }}
     </div>
 </div>

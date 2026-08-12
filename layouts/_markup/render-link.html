@@ -1,0 +1,29 @@
+{{/*
+  外部連結一律開新分頁，並在後面附一個小標記；購書連結另外上色。
+
+  修掉的幾件事：
+  - class 屬性原本是兩個 if 直接串接，內部連結會輸出 class=" "（空白但存在）。
+    改成先組 slice 再 delimit，沒有 class 就整個屬性不輸出。
+  - Amazon 判斷原本是 strings.Contains $dest "amazon"，任何網址只要含 amazon
+    字樣都會被當成購書連結。改成比對主機名，amazon.com / amazon.co.jp 都涵蓋，
+    而 not-amazon.example.com 不會。
+  - 「避免破壞圖片顯示」原本檢查的是**目的網址**的副檔名，但真正會出問題的是
+    連結文字本身是 <img> 的情況（[![alt](圖)](網址)）。改成檢查連結文字。
+  - <sup> 的樣式從 inline style 移到 .link-marker。
+*/}}
+{{- $dest := .Destination -}}
+{{- $isExternal := or (hasPrefix $dest "http://") (hasPrefix $dest "https://") -}}
+
+{{- $isAmazon := false -}}
+{{- if $isExternal -}}
+  {{- $host := lower (urls.Parse $dest).Hostname -}}
+  {{- $isAmazon = or (eq $host "amazon.com") (strings.Contains $host ".amazon.") (strings.HasSuffix $host ".amazon.com") -}}
+{{- end -}}
+
+{{- $classes := slice -}}
+{{- if $isExternal }}{{ $classes = $classes | append "external-link" }}{{ end -}}
+{{- if $isAmazon }}{{ $classes = $classes | append "amazon-link" }}{{ end -}}
+
+{{- $textIsImage := strings.Contains .Text "<img" -}}
+{{- /* prettier-ignore */ -}}
+<a href="{{ $dest | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ with $classes }} class="{{ delimit . " " }}"{{ end }}{{ if $isExternal }} target="_blank" rel="noopener noreferrer"{{ end }}>{{- .Text | safeHTML -}}{{- if and $isExternal (not $textIsImage) -}}<sup class="link-marker" aria-hidden="true">{{ if $isAmazon }}🛒{{ else }}↗{{ end }}</sup>{{- end -}}</a>

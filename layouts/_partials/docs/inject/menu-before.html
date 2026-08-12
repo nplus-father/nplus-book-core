@@ -1,0 +1,32 @@
+{{/*
+  側欄頂端的兩顆按鈕：回到 portal、以及（有的話）本書的書評頁。
+
+  emoji 本身沒有語意，螢幕閱讀器唸出來是「回郵符號」之類的東西，所以標成
+  aria-hidden，真正的名稱交給 aria-label。
+*/}}
+<div class="menu-top-bar">
+  <div class="menu-top-buttons">
+    <a href="https://nplus.wiki" class="book-btn book-btn-icon" aria-label="回到恩普拉氏" title="回到恩普拉氏">
+      <span aria-hidden="true">🔙</span>
+    </a>
+
+    {{- if site.Params.hasReview -}}
+      {{- $reviewURL := "" -}}
+      {{- with site.Params.reviewUrl -}}
+        {{- $reviewURL = . -}}
+      {{- else -}}
+        {{- $slug := site.BaseURL | strings.TrimSuffix "/" | path.Base -}}
+        {{- if and $slug (ne $slug "nplus.wiki") (ne $slug "/") -}}
+          {{- $reviewURL = printf "https://nplus.wiki/reviews/%s/" $slug -}}
+        {{- end -}}
+      {{- end -}}
+      {{- with $reviewURL -}}
+        <a href="{{ . }}" class="book-btn book-btn-icon" target="_blank" rel="noopener noreferrer"
+           aria-label="本書書評" title="本書書評">
+          <span aria-hidden="true">💬</span>
+        </a>
+      {{- end -}}
+    {{- end -}}
+  </div>
+  <hr class="menu-divider">
+</div>

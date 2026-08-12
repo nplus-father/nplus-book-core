@@ -1,0 +1,24 @@
+{{/*
+  主題初始化必須在 <head> 內同步執行。
+
+  先前這段在 docs/inject/footer.html 載入的外部 js 裡，也就是 </body> 前才跑，
+  於是深色模式使用者每次進站都會先看到一次全白的閃爍（FOUC）——瀏覽器已經用
+  預設的淺色畫過一輪，JS 才把 data-theme 換掉。
+
+  放在這裡是同步 inline script，會在任何內容繪製之前就決定好主題。CSS 那邊另有
+  prefers-color-scheme 後備（見 _variables.scss），所以就算這段被 CSP 擋掉，
+  系統偏好深色的人也不會拿到白底。
+*/}}
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('theme');
+      if (saved === 'dark' || saved === 'light') {
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+      /* 沒存過就不設 data-theme，交給 CSS 的 prefers-color-scheme 決定 */
+    } catch (e) {
+      /* localStorage 在無痕模式或被封鎖時會丟例外，忽略即可 */
+    }
+  })();
+</script>

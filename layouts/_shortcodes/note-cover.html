@@ -75,10 +75,12 @@
         {{ end }}
 
         {{ with $links }}
+        {{/* 樣式和 .book-btn 幾乎相同，直接共用同一個 class，不再維護第二份宣告。
+             rel 補上 noreferrer——只有 noopener 仍會送出 Referer。 */}}
         <div class="note-cover__actions">
             {{ range . }}
-            <a href="{{ .href }}" target="_blank" rel="noopener" class="note-cover__btn">
-                🔗 {{ .text }}
+            <a href="{{ .href }}" class="book-btn" target="_blank" rel="noopener noreferrer">
+                <span aria-hidden="true">🔗</span> {{ .text }}
             </a>
             {{ end }}
         </div>

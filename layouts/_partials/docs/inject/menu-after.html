@@ -1,0 +1,37 @@
+{{/*
+  主題切換。用 <button> 而不是 <a href="javascript:void(0)" onclick="...">：
+  後者對鍵盤與螢幕閱讀器來說不是按鈕，而 javascript: URL 與 inline handler
+  都需要 CSP 開 unsafe-inline 才能運作。
+*/}}
+<div class="menu-bottom-bar">
+  <button type="button" class="book-btn" data-theme-toggle>
+    <span aria-hidden="true">🌓</span>
+    <span>切換佈景</span>
+  </button>
+</div>
+
+<script>
+  (function () {
+    var btn = document.querySelector('[data-theme-toggle]');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+      var root = document.documentElement;
+      var current = root.getAttribute('data-theme');
+
+      /* 沒有明確設定過時，現在看到的是系統偏好——切換要相對於它，否則在
+         系統為深色的機器上第一次點擊會「切成深色」而看起來沒反應。 */
+      if (!current) {
+        current = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      var next = current === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch (e) {
+        /* 存不了就只在本頁生效 */
+      }
+    });
+  })();
+</script>
