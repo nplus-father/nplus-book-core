@@ -5,6 +5,16 @@
   某頁「已 review」的判準：frontmatter `reviewed: true`（可再加 `reviewedDate: "YYYY-MM-DD"`）。
   books-done 的 Hugo 書用 `read` / `readAt` 慣例，這裡一併吃並映射到同樣的欄位。
   未設 = 未 review（乾淨基線，不需逐頁 stamp）。
+
+  `kind` 先前寫死 "handbook"，於是 1600 多本書也自報是手冊。目前 portal 的
+  fetch-index.ts 沒有讀這個欄位（它靠 goals.yaml 指定站台、靠 GitHub topics 的
+  nplus-kind-* 判斷種類），所以沒有造成實害——但既然是對外的資料契約，留一個
+  假值遲早會被下一個消費端當真。
+
+  改成預設 "book"、由手冊自行覆寫：站台數量懸殊（約 1620 本書 vs 11 本手冊），
+  讓少數的一邊宣告成本最低。手冊在自己的 hugo.toml 加：
+      [params]
+      stationKind = "handbook"
 */ -}}
 {{- $items := slice -}}
 {{- range where site.Pages "Section" "docs" -}}
@@ -25,7 +35,7 @@
 {{- dict
     "station" (path.Base (strings.TrimSuffix "/" site.BaseURL))
     "brand" site.Title
-    "kind" "handbook"
+    "kind" (site.Params.stationKind | default "book")
     "count" (len $items)
     "items" $items
   | jsonify (dict "indent" "  ") -}}
