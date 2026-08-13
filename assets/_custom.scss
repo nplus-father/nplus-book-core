@@ -19,6 +19,13 @@ body {
     color var(--motion-base) var(--ease);
 }
 
+/* 內文字型。上游 normalize.css 只在 html 上設了一組沒有中文的 stack，
+ * 這裡覆蓋掉——見 _variables.scss 的 --font-sans 註解。
+ * 放 body 而非 html：表單元件靠 `font: inherit` 取值，從 body 繼承就夠。 */
+body {
+  font-family: var(--font-sans);
+}
+
 a {
   text-decoration: none;
   transition: color var(--motion-fast) var(--ease);

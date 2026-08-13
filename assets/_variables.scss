@@ -126,12 +126,31 @@
   --radius-md:  8px;    /* 按鈕 */
   --radius-lg: 12px;    /* 卡片 */
 
+  /* 字型全部走系統字，不外連 webfont。實測書庫渲染出來的內文是 87% 中文、
+   * 13% 西文，所以這兩條 stack 的成敗在「中文那半有沒有被指名」。
+   *
+   * 先前只有 --font-serif，內文完全交給上游 normalize.css 的
+   *     system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
+   * ——裡面一個中文字型都沒有。西文那半是挑過的、中文那半是瀏覽器 fallback
+   * 撿到的，等於把各平台原廠配好的中英組合拆散。指名之後每個平台拿到的都是
+   * 原廠成對的設計：Apple 的 SF Pro + PingFang、微軟的 Segoe UI + 正黑、
+   * Google 的 Roboto/Noto Sans + Noto Sans CJK。 */
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    "PingFang TC", "Noto Sans CJK TC", "Noto Sans TC",
+    "Microsoft JhengHei", sans-serif;
+
   /* 書名與大標用襯線體。這個書庫裡是柏拉圖、亞里斯多德、卡繆——襯線體是這批
-   * 書自己的字。全部走系統字型，不外連 webfont（CSP 會擋，而且多一次請求）。 */
+   * 書自己的字。
+   *
+   * Georgia 排在最前面（原本在倒數第二）：Palatino 系列 x-height 小、筆畫對比
+   * 高，跟中文的大字面率天生對不齊，中文會看起來比旁邊的英文大一號；而且
+   * "Palatino Linotype" 在沒裝的機器上常解析到 Ghostscript 的 P052 仿製字。
+   * Georgia x-height 大、筆畫紮實，配中文合得多，且三大平台都內建。 */
   --font-serif:
-    "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua",
+    Georgia, "Iowan Old Style", Palatino, "Book Antiqua",
     "Songti TC", "Noto Serif CJK TC", "Source Han Serif TC", "PMingLiU",
-    Georgia, serif;
+    serif;
 
   --text-xs:   0.8125rem;
   --text-sm:   0.875rem;
