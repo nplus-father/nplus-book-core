@@ -1,10 +1,9 @@
 {{/*
-  上游 hugo-book v0.14.0 的 menu-filetree.html，唯一的改動是 book-icon-title
-  末尾那一行「已讀」勾勾（frontmatter `reviewed: true`）。
+  上游 hugo-book v0.14.0 的 menu-filetree.html 整份複製，唯一的改動是
+  book-icon-title 末尾那一行「已讀」勾勾（frontmatter `reviewed: true`）。
 
-  這是整份複製的 override，所以升級主題時要回來對一次 diff。先前那份是從更舊的
-  版本 fork 的，已經漂移到上游改用 partialCached 都沒跟上——每頁都重建整棵選單
-  樹，章節多的書（最多的一本 246 篇）代價明顯。
+  既然是整份 override，**升級主題時要回來對一次 diff**：上一次漂移是上游改用
+  partialCached 而這裡沒跟上，於是每頁都重建整棵選單樹，246 章的書代價明顯。
 */}}
 {{ with (partialCached "docs/menu-section" .Site) }}
   {{ template "book-section-children" (dict "Section" . "CurrentPage" $) }}

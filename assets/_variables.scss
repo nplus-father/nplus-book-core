@@ -10,12 +10,15 @@
  *     @import "custom";                      // 14
  *     :root { @include theme-{BookTheme}; }  // 18 ← 最後才展開，所以它會用本檔的版本
  *
- * 第 18 行在所有 @import 之後，且選擇器同為 :root。先前的作法是在 _custom.scss
- * 再寫一次 :root，結果被第 18 行蓋掉；而 _variables.scss 又和 _custom.scss 重複
- * 定義了 22 個 token（21 個值不同），兩層互相覆蓋且沒有任何錯誤訊息。
+ * 第 18 行在所有 @import 之後且選擇器同為 :root，所以任何寫在 _custom.scss 的
+ * :root 宣告都會被它蓋掉，而且沒有錯誤訊息。
  *
  * 因為 mixin 同時輸出「上游的變數名」與「我們的語意名」，上游元件（側欄、
  * markdown、hint）會自動跟著這套色盤走，不必用 !important 硬壓。
+ *
+ * 需要隨明暗切換的值一律做成 token 放進這兩個 mixin。在 _custom.scss 寫
+ * `:root[data-theme="dark"] .foo` 這種選擇器是陷阱：漏掉 @media 包裝時，
+ * `:not([data-theme="light"])` 會在「沒選過主題的淺色」狀態下也命中。
  */
 
 /* ------------------------------------------------------------------ */
@@ -44,6 +47,9 @@
   --shadow-sm:    0 1px 2px rgba(16, 22, 26, 0.06);
   --shadow-md:    0 2px 8px rgba(16, 22, 26, 0.08);
   --shadow-lg:    0 8px 24px rgba(16, 22, 26, 0.12);
+
+  /* 書封的投射式陰影：書立在紙上，而不是貼在卡片裡 */
+  --shadow-cover: 0 12px 28px -12px rgba(16, 22, 26, 0.45), 0 2px 6px rgba(16, 22, 26, 0.12);
 
   /* --- 上游 hugo-book 用的變數名，指到同一組值 --- */
   --body-background:      var(--bg);
@@ -92,6 +98,8 @@
   --shadow-md:    0 2px 8px rgba(0, 0, 0, 0.40);
   --shadow-lg:    0 8px 24px rgba(0, 0, 0, 0.50);
 
+  --shadow-cover: 0 12px 28px -12px rgba(0, 0, 0, 0.75), 0 2px 6px rgba(0, 0, 0, 0.45);
+
   --body-background:      var(--bg);
   --body-background-tint: none;
   --body-font-color:      var(--text);
@@ -116,9 +124,7 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* 尺度：圓角、字級、間距、動態                                          */
-/* 這些與主題無關，直接宣告即可。先前散在各處——4 種圓角、4 套陰影、       */
-/* 7 個字級，各寫各的。                                                  */
+/* 尺度：圓角、字型、字級、間距、動態。與主題無關，直接宣告即可。          */
 /* ------------------------------------------------------------------ */
 
 :root {
@@ -129,7 +135,7 @@
   /* 字型全部走系統字，不外連 webfont。實測書庫渲染出來的內文是 87% 中文、
    * 13% 西文，所以這兩條 stack 的成敗在「中文那半有沒有被指名」。
    *
-   * 先前只有 --font-serif，內文完全交給上游 normalize.css 的
+   * 上游 normalize.css 給 html 的 stack 是
    *     system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
    * ——裡面一個中文字型都沒有。西文那半是挑過的、中文那半是瀏覽器 fallback
    * 撿到的，等於把各平台原廠配好的中英組合拆散。指名之後每個平台拿到的都是
@@ -143,10 +149,9 @@
   /* 書名與大標用襯線體。這個書庫裡是柏拉圖、亞里斯多德、卡繆——襯線體是這批
    * 書自己的字。
    *
-   * Georgia 排在最前面（原本在倒數第二）：Palatino 系列 x-height 小、筆畫對比
-   * 高，跟中文的大字面率天生對不齊，中文會看起來比旁邊的英文大一號；而且
-   * "Palatino Linotype" 在沒裝的機器上常解析到 Ghostscript 的 P052 仿製字。
-   * Georgia x-height 大、筆畫紮實，配中文合得多，且三大平台都內建。 */
+   * Georgia 排最前面：Palatino 系列 x-height 小、筆畫對比高，跟中文的大字面率
+   * 對不齊，中文會看起來比旁邊的英文大一號；而且 "Palatino Linotype" 在沒裝的
+   * 機器上常解析到 Ghostscript 的 P052 仿製字。Georgia 三大平台都內建。 */
   --font-serif:
     Georgia, "Iowan Old Style", Palatino, "Book Antiqua",
     "Songti TC", "Noto Serif CJK TC", "Source Han Serif TC", "PMingLiU",

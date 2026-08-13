@@ -1,7 +1,13 @@
 /* nplus-book-core/assets/_custom.scss
  *
- * 只放元件樣式。**不要在這裡宣告 :root** —— 色票與尺度全部在 _variables.scss，
- * 原因見該檔開頭（book.scss 第 18 行的 :root 在本檔之後展開，寫在這裡會被蓋掉）。
+ * 只放元件樣式。色票與尺度全部在 _variables.scss，這裡兩件事不要做：
+ *
+ *   1. 不要宣告 :root——book.scss 第 18 行的 :root 在本檔之後展開，會蓋掉它，
+ *      而且沒有錯誤訊息。
+ *   2. 不要寫 `:root[data-theme="…"] .foo` 這種隨主題變的選擇器——需要跟著明暗
+ *      切換的值做成 token 放進 _variables.scss 的 mixin。寫在這裡很容易漏掉
+ *      @media 包裝，`:not([data-theme="light"])` 就會在「沒選過主題的淺色」
+ *      狀態下也命中。
  *
  * 也不需要用 !important 壓上游的顏色：_variables.scss 的 mixin 已經把上游的
  * --body-background / --gray-100 / --color-link 等指到同一組 token，上游元件
@@ -19,8 +25,7 @@ body {
     color var(--motion-base) var(--ease);
 }
 
-/* 內文字型。上游 normalize.css 只在 html 上設了一組沒有中文的 stack，
- * 這裡覆蓋掉——見 _variables.scss 的 --font-sans 註解。
+/* 覆蓋上游 normalize.css 給 html 的無中文 stack，理由見 _variables.scss。
  * 放 body 而非 html：表單元件靠 `font: inherit` 取值，從 body 繼承就夠。 */
 body {
   font-family: var(--font-sans);
@@ -61,8 +66,7 @@ a {
 }
 
 /* ------------------------------------------------------------------ */
-/* 按鈕                                                                 */
-/* .book-btn 與 note-cover 的行動按鈕先前是兩份幾乎相同的宣告，合成一份。 */
+/* 按鈕。note-cover 的行動按鈕共用 .book-btn，不要再開第二份。            */
 /* ------------------------------------------------------------------ */
 
 .book-btn {
@@ -104,9 +108,8 @@ a {
 }
 
 /* ------------------------------------------------------------------ */
-/* 側欄工具列                                                            */
-/* 側欄本體是一串安靜的連結，chrome 應該比內容更輕而不是更重——所以不做      */
-/* 成有框有底的藥丸按鈕，平時是次要色，滑過才浮起來。                       */
+/* 側欄工具列。側欄本體是一串安靜的連結，chrome 要比內容輕——所以不做成      */
+/* 有框有底的藥丸按鈕，平時次要色，滑過才浮起來。                          */
 /* ------------------------------------------------------------------ */
 
 .menu-tools {
@@ -165,9 +168,8 @@ a {
 }
 
 /* ------------------------------------------------------------------ */
-/* book-cover：書籍頁的開場                                              */
-/* 封面立在頁面上，不包卡片——封面本身已有形狀與陰影，外面再加框只是         */
-/* 在框裡畫框，而且會把整頁最好看的素材壓小。                              */
+/* book-cover：書籍頁的開場。封面立在頁面上，不包卡片——它本身已有形狀與     */
+/* 陰影，外面再加框只是在框裡畫框，還會把整頁最好看的素材壓小。            */
 /* ------------------------------------------------------------------ */
 
 .book-hero {
@@ -182,28 +184,25 @@ a {
   }
 }
 
-/* 手機是單欄，封面在最上面。先前它靠左、卡在 232px，於是整頁最好看的素材
-   縮在左上角、右邊留一大塊空白。窄螢幕改成置中並放大到 68vw，寬螢幕才回到
-   232px 的側欄尺寸（那時它本來就在自己的格子裡，置中反而會離內文太遠）。 */
-/* 寬度用百分比而不是 min(280px, 68vw)：Hugo 這條線用的是 libsass，遇到
-   min() 裡混用 vw 與 px 會直接以 "Incompatible units" 中止整個 build。 */
+/* 手機是單欄，封面置中放大；寬螢幕才回到 232px 的側欄尺寸（那時它已經在自己
+   的格子裡，置中反而會離內文太遠）。
+
+   寬度用百分比而不是 min(280px, 68vw)：Hugo 這條線用的是 libsass，遇到 min()
+   裡混用 vw 與 px 會直接以 "Incompatible units" 中止整個 build。 */
 .book-hero__cover {
   width: 68%;
   max-width: 280px;
   margin-inline: auto;
   overflow: hidden;
+  border-radius: 2px;
+  background-color: var(--surface-2);
+  box-shadow: var(--shadow-cover);
 
   @media (min-width: 640px) {
     width: 100%;
     max-width: 232px;
     margin-inline: 0;
   }
-  border-radius: 2px;
-  background-color: var(--surface-2);
-  /* 投射式陰影：書立在紙上，而不是貼在卡片裡 */
-  box-shadow:
-    0 12px 28px -12px rgba(16, 22, 26, 0.45),
-    0 2px 6px rgba(16, 22, 26, 0.12);
 
   img {
     display: block;
@@ -212,22 +211,19 @@ a {
   }
 }
 
-:root[data-theme="dark"] .book-hero__cover,
-:root:not([data-theme="light"]) .book-hero__cover {
-  box-shadow:
-    0 12px 28px -12px rgba(0, 0, 0, 0.75),
-    0 2px 6px rgba(0, 0, 0, 0.45);
-}
-
-/* 先前是 --gray-300 字疊在 --gray-200 底上，對比 1.10:1，「無封面」等於隱形 */
-.book-hero__no-cover {
+/* 缺圖時的占位。書封與筆記卡只差在長寬比，其餘共用。
+   用 --text-muted 而非上游的 --gray-300：後者疊在 --gray-200 底上只有 1.10:1。 */
+.book-hero__no-cover,
+.note-cover__no-image {
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 2 / 3;
   color: var(--text-muted);
   font-size: var(--text-sm);
 }
+
+.book-hero__no-cover  { aspect-ratio: 2 / 3; }
+.note-cover__no-image { aspect-ratio: 16 / 9; width: 100%; }
 
 .book-hero__body {
   min-width: 0;
@@ -281,10 +277,8 @@ a {
 }
 
 /* ------------------------------------------------------------------ */
-/* book-overview：四段深度概覽的分頁容器                                  */
-/*                                                                     */
-/* 未經 JS 增強時（.is-tabbed 還沒被加上）就是一般的章節堆疊，四段全部可見。 */
-/* 這是刻意的：內容不能只存在於 JS 打開後的狀態。                          */
+/* book-overview：四段深度概覽的分頁容器。未經 JS 增強時就是一般的章節      */
+/* 堆疊，四段全部可見——內容不能只存在於 JS 打開後的狀態。                  */
 /* ------------------------------------------------------------------ */
 
 .book-overview {
@@ -312,9 +306,8 @@ a {
   }
 }
 
-/* 先前這排是 overflow-x:auto 的底線式分頁。兩個問題：底線太安靜，四個段名讀
-   起來像小標而不是可按的東西；而 overflow-x 讓整排在手機上可以被拖動晃來晃去，
-   桌機則多出一條沒必要的捲軸。改成會換行的實體按鈕，寬度不夠就折行，不捲動。 */
+/* 寬度不夠就折行，不要用 overflow-x：那會讓整排在手機上被拖著晃，桌機則多
+   一條沒必要的捲軸。 */
 .book-overview__tabs {
   display: flex;
   flex-wrap: wrap;
@@ -412,8 +405,7 @@ a.amazon-link {
 }
 
 /* ------------------------------------------------------------------ */
-/* 側欄的已讀勾勾                                                        */
-/* 先前是 #22c55e，在白底上只有 2.28:1；它是功能性指示，不能只靠顏色。     */
+/* 側欄的已讀勾勾。功能性指示，顏色要過對比（--success 已是 AA）。         */
 /* ------------------------------------------------------------------ */
 
 .reviewed-check {
@@ -462,16 +454,6 @@ a.amazon-link {
     width: 100%;
     height: auto;
   }
-}
-
-.note-cover__no-image {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  color: var(--text-muted);
-  font-size: var(--text-sm);
 }
 
 .note-cover__content {

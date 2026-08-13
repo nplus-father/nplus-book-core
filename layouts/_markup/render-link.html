@@ -1,15 +1,13 @@
 {{/*
   外部連結一律開新分頁，並在後面附一個小標記；購書連結另外上色。
 
-  修掉的幾件事：
-  - class 屬性原本是兩個 if 直接串接，內部連結會輸出 class=" "（空白但存在）。
-    改成先組 slice 再 delimit，沒有 class 就整個屬性不輸出。
-  - Amazon 判斷原本是 strings.Contains $dest "amazon"，任何網址只要含 amazon
-    字樣都會被當成購書連結。改成比對主機名，amazon.com / amazon.co.jp 都涵蓋，
-    而 not-amazon.example.com 不會。
-  - 「避免破壞圖片顯示」原本檢查的是**目的網址**的副檔名，但真正會出問題的是
-    連結文字本身是 <img> 的情況（[![alt](圖)](網址)）。改成檢查連結文字。
-  - <sup> 的樣式從 inline style 移到 .link-marker。
+  三個容易寫錯的地方：
+  - class 用 slice + delimit 組，不要兩個 if 直接串接——後者會讓內部連結輸出
+    class=" "（空白但存在）。
+  - Amazon 判斷比對**主機名**，不是 strings.Contains $dest "amazon"：後者會把
+    not-amazon.example.com 也當成購書連結。
+  - 標記的抑制條件看**連結文字**是不是 <img>（[![alt](圖)](網址)），不是看目的
+    網址的副檔名——會被角標破壞的是圖片連結。
 */}}
 {{- $dest := .Destination -}}
 {{- $isExternal := or (hasPrefix $dest "http://") (hasPrefix $dest "https://") -}}

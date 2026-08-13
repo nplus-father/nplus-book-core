@@ -1,18 +1,14 @@
 {{/*
-  封面縮圖在 build 時產生：原圖是 500×757 的 PNG（實測 350KB 上下），
-  但 .book-cover-img-wrapper 只有 max-width 180px，等於讓每位讀者為看不到的
-  像素付 300KB 以上。這裡縮成 360px 寬（180 的 2× DPI）的 WebP，約 15KB。
+  封面縮圖在 build 時產生：原圖 500px 寬的 PNG 約 350KB，但版面最寬只用到
+  232px，縮成 360px 寬（2× DPI）的 WebP 約 15KB。只在原圖更寬時才縮，非圖片
+  資源與外部 URL 原樣輸出。
 
-  用 Hugo 內建處理而不是外部圖片代理：圖就在本 repo 的 page bundle 裡，build
-  時處理不需要第三方、不需要執行期請求，產物也跟站台同源。
-  （筆記站的書架情況不同——那裡的圖在別的 repo、別的網域，只能走代理。）
+  用 Hugo 內建處理而不是外部圖片代理：圖就在本 repo 的 page bundle 裡，不需要
+  第三方也不需要執行期請求，產物與站台同源。
 
-  **原始 cover.png 仍會照常發佈到 /cover.png**：它是 page bundle 的資源，
-  Hugo 一律複製到 public/，與這裡有沒有引用無關。portal 與 62 個筆記站都靠
-  那個網址取書封，不能斷——改動後務必確認 public/cover.png 還在。
-
-  只在原圖比 360px 寬時才縮，否則保持原樣（避免把小圖放大反而變胖）。
-  非圖片資源或外部 URL 一律原樣輸出。
+  **原始 cover.png 仍會照常發佈到 /cover.png**：它是 page bundle 的資源，Hugo
+  一律複製到 public/，與這裡有沒有引用無關。portal 與 62 個筆記站都靠那個網址
+  取書封，不能斷——改動後務必確認 public/cover.png 還在。
 */}}
 {{ $src := .Get "src" }}
 {{ $img := "" }}
@@ -29,16 +25,7 @@
         {{ $h = $small.Height }}
     {{ end }}
 {{ end }}
-{{/*
-  版面：封面立在頁面上，不再包一層卡片。
-
-  先前是「卡片包封面」——封面自己有圓角與陰影，外面再套一個有框、有底色、有
-  陰影的容器，等於在框裡再畫一個框，而整頁最好看的素材（封面）反而被壓到
-  180px。現在封面放到 232px、用投射式陰影，其餘資訊靠留白分組。
-
-  標題改成 h1：這頁先前完全沒有 h1（卡片標題是 h2），文件結構從 h2 開始。
-  書名就是這一頁的主標題。
-*/}}
+{{/* 書名是這一頁的主標題，用 h1——不要降回 h2，那會讓整頁沒有 h1。 */}}
 <div class="book-hero">
     <div class="book-hero__cover">
         {{ if $img }}
@@ -52,21 +39,18 @@
     <div class="book-hero__body">
         <h1 class="book-hero__title">{{ .Get "title" }}</h1>
 
-        {{/* 作者與出版日收成一行。兩個欄位不需要表格式排版，也不需要 emoji
-             說明「這是作者」「這是日期」。 */}}
         <p class="book-hero__meta">
             <span>{{ .Get "author" }}</span>
             {{- with .Get "date" }}<span class="book-hero__sep" aria-hidden="true">·</span><span>{{ . }}</span>{{ end -}}
         </p>
 
         {{ with .Inner }}
-        {{/* 簡介就是導言，位置本身已說明它是什麼，不需要「📖 簡介」標籤 */}}
         <div class="book-hero__lede">{{ . | markdownify }}</div>
         {{ end }}
 
         {{ with .Get "link" }}
-        {{/* target="_blank" 必須配 rel="noopener noreferrer"，否則新分頁可以
-             透過 window.opener 操作原頁（reverse tabnabbing）。 */}}
+        {{/* target="_blank" 必須配 rel="noopener noreferrer"：只有 noopener
+             仍會送出 Referer，兩個都缺則新分頁可透過 window.opener 操作原頁。 */}}
         <a class="book-hero__buy" href="{{ . }}" target="_blank" rel="noopener noreferrer">在 Amazon 上查看</a>
         {{ end }}
     </div>

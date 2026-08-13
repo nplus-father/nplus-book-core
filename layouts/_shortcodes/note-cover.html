@@ -16,10 +16,8 @@
 {{ $src   := .Get "src" }}
 {{ $tags  := .Get "tags" }}
 
-{{/* Resolve image: Page Bundle resource → fallback to raw path / URL.
-     Page bundle 圖在 build 時縮成 640px 寬（.note-cover__image 的 max-width
-     是 320px，2× DPI 即 640）的 WebP，理由同 book-cover.html。
-     只在原圖更寬時才縮；非圖片資源與外部 URL 原樣輸出。 */}}
+{{/* Page Bundle resource → fallback to raw path / URL。Page bundle 圖縮成
+     640px 寬（版面 320px 的 2× DPI）的 WebP，理由同 book-cover.html。 */}}
 {{ $imgRel := "" }}
 {{ $imgW := 0 }}
 {{ $imgH := 0 }}
@@ -75,8 +73,7 @@
         {{ end }}
 
         {{ with $links }}
-        {{/* 樣式和 .book-btn 幾乎相同，直接共用同一個 class，不再維護第二份宣告。
-             rel 補上 noreferrer——只有 noopener 仍會送出 Referer。 */}}
+        {{/* 共用 .book-btn，不要再開第二份宣告 */}}
         <div class="note-cover__actions">
             {{ range . }}
             <a href="{{ .href }}" class="book-btn" target="_blank" rel="noopener noreferrer">

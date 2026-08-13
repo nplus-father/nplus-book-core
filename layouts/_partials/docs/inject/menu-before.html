@@ -1,12 +1,11 @@
 {{/*
   側欄工具列：回 portal、書評、切換佈景。
 
-  三個 chrome 收在同一列，而不是「兩顆在上、一顆在章節樹下面」——切換佈景原本
-  排在整棵樹之後，最多的一本書有 246 章，要捲到底才點得到。
+  三顆都要留在章節樹**之前**——最多的一本書有 246 章，排在樹後面就得捲到底
+  才點得到。
 
   圖示用 inline SVG 而不是 emoji：🔙 在部分平台的字型裡字面上就寫著 BACK，長相
-  不可控；SVG 走 currentColor，深淺色自動跟著走，也不需要主題那個
-  --icon-filter: brightness(0) invert(1) 的反相 hack。
+  不可控；SVG 走 currentColor，深淺色自動跟著走，也不需要 --icon-filter 反相。
 */}}
 <div class="menu-tools">
   <a class="menu-tool" href="https://nplus.wiki">

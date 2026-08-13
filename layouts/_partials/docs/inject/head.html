@@ -1,13 +1,10 @@
 {{/*
-  主題初始化必須在 <head> 內同步執行。
+  主題初始化必須是 <head> 內的同步 inline script：要在任何內容繪製之前決定好
+  主題，否則深色模式使用者會先看到一次全白的閃爍（FOUC）。搬到 </body> 前或
+  外部 js 都會重新引入那個閃爍。
 
-  先前這段在 docs/inject/footer.html 載入的外部 js 裡，也就是 </body> 前才跑，
-  於是深色模式使用者每次進站都會先看到一次全白的閃爍（FOUC）——瀏覽器已經用
-  預設的淺色畫過一輪，JS 才把 data-theme 換掉。
-
-  放在這裡是同步 inline script，會在任何內容繪製之前就決定好主題。CSS 那邊另有
-  prefers-color-scheme 後備（見 _variables.scss），所以就算這段被 CSP 擋掉，
-  系統偏好深色的人也不會拿到白底。
+  CSS 那邊另有 prefers-color-scheme 後備（見 _variables.scss），所以這段被 CSP
+  擋掉時，系統偏好深色的人也不會拿到白底。
 */}}
 <script>
   (function () {
@@ -28,13 +25,10 @@
   伺服器端輸出的永遠是完整可讀的四段，這段只負責收攏；失敗就維持原樣。
 */}}
 <script defer>
-  /* 按鈕上只放短英文，中文全名進 title。四個中文段名在手機上排不成一列
-     （「作者的位置」「這本書的限制」各佔五、六個字），折行後那排按鈕比
-     內容還高。
-
-     只換按鈕的字，h2 的中文段名不動——data-default 的預設分頁、
-     audit-overview.py 的「四段齊全」都是拿中文比對，而面板內視覺隱藏的
-     h2 是無 JS 狀態與螢幕閱讀器唯一的段名來源。 */
+  /* 按鈕上放短英文（中文段名太長，手機排不成一列），中文全名進 title。
+     h2 的中文段名不能跟著改：data-default 的預設分頁、audit-overview.py 的
+     「四段齊全」都拿中文比對，而面板內視覺隱藏的 h2 是無 JS 狀態與螢幕閱讀器
+     唯一的段名來源。 */
   var BOOK_OVERVIEW_LABELS = {
     '作者的位置': 'Author',
     '完整摘要': 'Summary',
