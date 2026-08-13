@@ -28,6 +28,20 @@
   伺服器端輸出的永遠是完整可讀的四段，這段只負責收攏；失敗就維持原樣。
 */}}
 <script defer>
+  /* 按鈕上只放短英文，中文全名進 title。四個中文段名在手機上排不成一列
+     （「作者的位置」「這本書的限制」各佔五、六個字），折行後那排按鈕比
+     內容還高。
+
+     只換按鈕的字，h2 的中文段名不動——data-default 的預設分頁、
+     audit-overview.py 的「四段齊全」都是拿中文比對，而面板內視覺隱藏的
+     h2 是無 JS 狀態與螢幕閱讀器唯一的段名來源。 */
+  var BOOK_OVERVIEW_LABELS = {
+    '作者的位置': 'Author',
+    '完整摘要': 'Summary',
+    '定位': 'Context',
+    '這本書的限制': 'Limits',
+  };
+
   document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('[data-book-overview]').forEach(function (root, idx) {
       var heads = Array.prototype.filter.call(root.children, function (el) {
@@ -83,7 +97,8 @@
         tab.id = tid;
         tab.setAttribute('role', 'tab');
         tab.setAttribute('aria-controls', pid);
-        tab.textContent = g.title;
+        tab.textContent = BOOK_OVERVIEW_LABELS[g.title] || g.title;
+        tab.title = g.title;
         tabs.push(tab);
         tablist.appendChild(tab);
       });
