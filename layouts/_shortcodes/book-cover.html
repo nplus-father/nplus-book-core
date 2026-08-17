@@ -10,7 +10,23 @@
   一律複製到 public/，與這裡有沒有引用無關。portal 與 62 個筆記站都靠那個網址
   取書封，不能斷——改動後務必確認 public/cover.png 還在。
 */}}
-{{ $src := .Get "src" }}
+{{/*
+  Book metadata comes from the page's `book:` frontmatter map. Shortcode
+  arguments are not queryable from other templates, so as long as these values
+  lived only in the shortcode call, `layouts/index.json` could not publish them
+  and the portal had to re-parse them out of the GitHub repo description.
+
+  Inline arguments still win when present, so a site can be migrated (or rolled
+  back) one file at a time without the cover ever rendering blank.
+*/}}
+{{ $book := .Page.Params.book | default dict }}
+{{ $title := or (.Get "title") $book.title }}
+{{ $author := or (.Get "author") $book.author }}
+{{ $date := or (.Get "date") $book.published }}
+{{ $link := or (.Get "link") $book.link }}
+{{ $blurb := or .Inner $book.blurb }}
+
+{{ $src := or (.Get "src") $book.cover }}
 {{ $img := "" }}
 {{ $w := 0 }}
 {{ $h := 0 }}
@@ -29,7 +45,7 @@
 <div class="book-hero">
     <div class="book-hero__cover">
         {{ if $img }}
-        <img src="{{ $img }}" alt="{{ .Get "title" }} 封面" loading="lazy" decoding="async"
+        <img src="{{ $img }}" alt="{{ $title }} 封面" loading="lazy" decoding="async"
             {{ with $w }}width="{{ . }}"{{ end }}{{ with $h }} height="{{ . }}"{{ end }}>
         {{ else }}
         <div class="book-hero__no-cover">無封面</div>
@@ -37,18 +53,18 @@
     </div>
 
     <div class="book-hero__body">
-        <h1 class="book-hero__title">{{ .Get "title" }}</h1>
+        <h1 class="book-hero__title">{{ $title }}</h1>
 
         <p class="book-hero__meta">
-            <span>{{ .Get "author" }}</span>
-            {{- with .Get "date" }}<span class="book-hero__sep" aria-hidden="true">·</span><span>{{ . }}</span>{{ end -}}
+            <span>{{ $author }}</span>
+            {{- with $date }}<span class="book-hero__sep" aria-hidden="true">·</span><span>{{ . }}</span>{{ end -}}
         </p>
 
-        {{ with .Inner }}
+        {{ with $blurb }}
         <div class="book-hero__lede">{{ . | markdownify }}</div>
         {{ end }}
 
-        {{ with .Get "link" }}
+        {{ with $link }}
         {{/* target="_blank" 必須配 rel="noopener noreferrer"：只有 noopener
              仍會送出 Referer，兩個都缺則新分頁可透過 window.opener 操作原頁。 */}}
         <a class="book-hero__buy" href="{{ . }}" target="_blank" rel="noopener noreferrer">在 Amazon 上查看</a>

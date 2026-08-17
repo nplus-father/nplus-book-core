@@ -27,10 +27,25 @@
     ) -}}
   {{- end -}}
 {{- end -}}
+{{- /*
+  `book` republishes the home page's `book:` frontmatter — title, author,
+  publication date, purchase link and the one-line blurb. The portal used to
+  recover these by splitting the GitHub repo description on "|": a positional
+  format capped at 350 characters that silently shifted every field if a title
+  contained a separator. Here they are named fields with no length limit,
+  emitted by the site that owns them.
+
+  Empty on sites not yet migrated, so consumers must keep their fallback.
+*/ -}}
+{{- $book := dict -}}
+{{- with site.Home.Params.book -}}
+  {{- $book = . -}}
+{{- end -}}
 {{- dict
     "station" (path.Base (strings.TrimSuffix "/" site.BaseURL))
     "brand" site.Title
     "kind" (site.Params.stationKind | default "book")
+    "book" $book
     "count" (len $items)
     "items" $items
   | jsonify (dict "indent" "  ") -}}
