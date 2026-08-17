@@ -16,12 +16,34 @@
   {{- if .File -}}
     {{- $reviewed := or (eq .Params.reviewed true) (eq .Params.read true) -}}
     {{- $reviewedDate := or .Params.reviewedDate .Params.readAt | default "" -}}
+    {{- /*
+      `chars` counts runes, not bytes: `len` would report CJK at three times its
+      length and make Chinese books look enormous next to English ones. Lines
+      that are exactly `---` are dropped so this matches BookHealthService's
+      local scan, which cannot tell a body rule from a frontmatter fence and
+      therefore skips both.
+    */ -}}
+    {{- /*
+      The trailing newline is trimmed before splitting: `split "a\n" "\n"`
+      yields a final empty element, which would add one character per page.
+    */ -}}
+    {{- $chars := 0 -}}
+    {{- with .RawContent -}}
+      {{- /* `split "" "\n"` still yields one empty element, so a section index
+             with nothing but frontmatter would otherwise report one character. */ -}}
+      {{- range (split (strings.TrimSuffix "\n" .) "\n") -}}
+        {{- if ne (trim . " \t\r") "---" -}}
+          {{- $chars = add $chars (add (strings.RuneCount .) 1) -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
     {{- $items = $items | append (dict
         "id" .File.Path
         "title" .Title
         "url" .Permalink
         "weight" .Weight
         "leaf" (eq (len .Pages) 0)
+        "chars" $chars
         "reviewed" $reviewed
         "reviewedDate" $reviewedDate
     ) -}}
