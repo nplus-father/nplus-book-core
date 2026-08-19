@@ -63,11 +63,67 @@
 {{- with site.Home.Params.book -}}
   {{- $book = . -}}
 {{- end -}}
+{{- /*
+  `overview` reports the state of the home page's deep overview, so the portal
+  can show how far the four-section rewrite has got without anyone running a
+  local scan over 1,700 clones — the same move `chars` above made for content
+  health.
+
+  `state` keys on the shortcode call, exactly as `overview-lanes/next.sh` and
+  `OverviewCoverageService.stateOf` do; all three have to agree on what "done"
+  means, or the dashboard will contradict the tool that writes the books. The
+  marker is matched without its closing `%}}` so the literal never has to carry
+  `}}` through the template lexer.
+
+  `sections` counts runes with whitespace removed, matching audit-overview.py's
+  `zh_len`, and the portal compares those to the thresholds that audit enforces.
+  Only the four canonical headings count, and only until the closing shortcode:
+  a legacy page therefore reports zeros rather than the lengths of its three old
+  headings, which is the honest answer for a book not yet rewritten.
+*/ -}}
+{{- $overviewNames := slice "作者的位置" "完整摘要" "定位" "這本書的限制" -}}
+{{- $sections := dict -}}
+{{- range $overviewNames -}}
+  {{- $sections = merge $sections (dict . 0) -}}
+{{- end -}}
+{{- $home := site.Home.RawContent -}}
+{{- $state := "none" -}}
+{{- if strings.Contains $home "{{% book-overview" -}}
+  {{- $state = "done" -}}
+{{- else if strings.Contains $home "深度概覽" -}}
+  {{- $state = "legacy" -}}
+{{- end -}}
+{{- if eq $state "done" -}}
+  {{- $current := "" -}}
+  {{- range (split $home "\n") -}}
+    {{- $line := trim . " \t\r" -}}
+    {{- if strings.Contains $line "{{% /book-overview" -}}
+      {{- $current = "" -}}
+    {{- else if hasPrefix $line "## " -}}
+      {{- $name := trim (strings.TrimPrefix "## " $line) " " -}}
+      {{- $current = cond (in $overviewNames $name) $name "" -}}
+    {{- else if ne $current "" -}}
+      {{- /*
+        Go's `\s` is ASCII-only while python's is Unicode-aware, so a full-width
+        space would be counted here and dropped there. No home page carries one
+        today (checked all 1,754), but the two implementations have to stay
+        interchangeable, so the class is widened rather than left to luck.
+      */ -}}
+      {{- $n := strings.RuneCount (replaceRE "[\\s\\x{00a0}\\x{3000}\\x{feff}\\x{200b}]" "" $line) -}}
+      {{- $sections = merge $sections (dict $current (add (index $sections $current) $n)) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $overviewChars := 0 -}}
+{{- range $overviewNames -}}
+  {{- $overviewChars = add $overviewChars (index $sections .) -}}
+{{- end -}}
 {{- dict
     "station" (path.Base (strings.TrimSuffix "/" site.BaseURL))
     "brand" site.Title
     "kind" (site.Params.stationKind | default "book")
     "book" $book
+    "overview" (dict "state" $state "chars" $overviewChars "sections" $sections)
     "count" (len $items)
     "items" $items
   | jsonify (dict "indent" "  ") -}}
