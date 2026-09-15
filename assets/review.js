@@ -11,6 +11,9 @@
  *     基線就什麼都不留。
  *   - 差異在側欄永遠看得到（待匯出的勾是淡的）；勾選框與右下角的按鈕只在開關
  *     開著時出現（review:mode）。
+ *   - 匯出過的標記留著（基線還沒前進，側欄還要顯示），但不會再進下一份
+ *     匯出檔；站台重建後基線追上，那些標記自己消失（reconcile）。所以「清除
+ *     已匯出」是備案，不是每次都得做的步驟。
  *
  * 匯出的 JSON 就是資料契約，欄位說明在 README「已讀標記」一節，skill 讀的是
  * 那份說明；改欄位兩邊要一起改。
@@ -74,8 +77,12 @@
     return null;
   }
 
+  function pendingExport() {
+    return items.filter(function (a) { return !a.exportedAt; });
+  }
+
   function unexported() {
-    return items.filter(function (a) { return !a.exportedAt; }).length;
+    return pendingExport().length;
   }
 
   function modeOn() {
@@ -303,8 +310,8 @@
   /* 匯出                                                                 */
   /* ------------------------------------------------------------------ */
 
-  function payload() {
-    var list = items.slice().sort(function (a, b) {
+  function payload(source) {
+    var list = source.slice().sort(function (a, b) {
       if (a.source !== b.source) return a.source < b.source ? -1 : 1;
       return a.createdAt < b.createdAt ? -1 : 1;
     }).map(function (a) {
@@ -328,16 +335,26 @@
     };
   }
 
-  function markExported() {
+  function markExported(list) {
     var now = new Date().toISOString();
-    items.forEach(function (a) { a.exportedAt = now; });
+    list.forEach(function (a) { a.exportedAt = now; });
     save();
   }
 
+  /* 預設只送沒匯出過的；全都送過了還要再送一次，得自己點頭 */
+  function toExport() {
+    var list = pendingExport();
+    if (list.length) return list;
+    if (!items.length) { toast('還沒有任何標記'); return null; }
+    if (!window.confirm(items.length + ' 筆都匯出過了，要再匯出一次嗎？')) return null;
+    return items.slice();
+  }
+
   function exportFile() {
-    if (!items.length) { toast('還沒有任何標記'); return; }
+    var list = toExport();
+    if (!list) return;
     var name = 'review-' + STATION + '-' + stamp() + '.json';
-    var json = JSON.stringify(payload(), null, 2);
+    var json = JSON.stringify(payload(list), null, 2);
     var blob = new Blob([json], { type: 'application/json' });
 
     /* 手機上下載常常不知道存去哪，能分享就走分享（存到雲端硬碟、傳給自己） */
@@ -345,7 +362,7 @@
       try {
         var file = new File([blob], name, { type: 'application/json' });
         if (navigator.canShare({ files: [file] })) {
-          navigator.share({ files: [file], title: name }).then(markExported).catch(function () {});
+          navigator.share({ files: [file], title: name }).then(function () { markExported(list); }).catch(function () {});
           return;
         }
       } catch (e) { /* 不支援 File 建構就走下載 */ }
@@ -359,16 +376,17 @@
     a.click();
     a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-    markExported();
+    markExported(list);
     toast('已匯出 ' + name);
   }
 
   function copyJson() {
-    if (!items.length) { toast('還沒有任何標記'); return; }
-    var json = JSON.stringify(payload(), null, 2);
+    var list = toExport();
+    if (!list) return;
+    var json = JSON.stringify(payload(list), null, 2);
     if (!navigator.clipboard) { toast('這個瀏覽器不給寫剪貼簿，請用匯出'); return; }
     navigator.clipboard.writeText(json).then(function () {
-      markExported();
+      markExported(list);
       toast('JSON 已複製到剪貼簿');
     }, function () {
       toast('複製失敗，請用匯出');
@@ -412,8 +430,24 @@
     });
   });
 
+  /* 站台重建後基線會前進。items 照 setReviewed 的規則只存「跟基線不同」的差異，
+     所以跟新基線一致的那些已經沒有意義——套用過、部署過了——直接清掉，不必等
+     手動「清除已匯出」。側欄 filetree 每頁都渲染全書，隨便開一頁就對完一次。 */
+  function reconcile() {
+    var baseline = {};
+    rows.forEach(function (r) { baseline[r.ch.source] = r.ch.baseline; });
+    if (HERE.source) baseline[HERE.source] = HERE.baseline;
+    var before = items.length;
+    items = items.filter(function (a) {
+      if (!(a.source in baseline)) return true;   /* 這次沒看到的章節先留著 */
+      return (a.kind === 'reviewed') !== baseline[a.source];
+    });
+    if (items.length !== before) save();
+  }
+
   buildTree();
   buildTray();
+  reconcile();
   refresh();
   applyMode(modeOn());
 })();

@@ -104,6 +104,12 @@ inline = [['$', '$']]
 
 匯出的檔案交給 `/book-apply-review` skill：已讀 → frontmatter `reviewed: true` 與
 `reviewed_date`、取消已讀 → 移除 `reviewed`／`reviewed_date`（與舊慣例 `read`／`readAt`）。
+套用是冪等的：源檔已經是目標狀態就跳過，既有的 `reviewed_date` 不會被後來的匯出檔蓋掉。
+
+**同一筆標記不會被匯出兩次。** 匯出（或複製）當下就在該批標記上蓋 `exportedAt`，之後的
+匯出只收沒蓋過的；全都匯出過了還要再送一次，會先問過你。標記本身留著不動——基線還沒
+前進，側欄得繼續顯示它——等站台重建、新的 `data-rv-reviewed` 追上來，下次開任何一頁就
+自動清掉。所以「清除已匯出」是備案（例如那批根本沒 commit），不是每次都得做的步驟。
 
 設計上的幾個硬約束：
 
@@ -113,6 +119,9 @@ inline = [['$', '$']]
 - 已讀基線由 build 寫進頁面（`inject/body.html` 的 `data-reviewed`、`menu-filetree.html`
   的 `data-rv-reviewed`），判準與 `index.json` 相同：`reviewed: true` 或 `read: true`。
 - 差異永遠顯示，勾選框與右下角按鈕只在開關開著時出現。
+- `items` 只存「跟基線不同」的差異，這條不變量同時管兩件事：勾回基線當場不留標記
+  （`setReviewed`），以及重建後基線前進、標記跟著自動消失（`reconcile`，啟動時跑一次，
+  側欄 filetree 每頁都渲染全書，所以一頁就對完整本）。
 - 2026-09-12 之前的版本（`nplus-review/1`）還能劃線、加註；那些標記這版不再顯示也不再
   匯出。
 
