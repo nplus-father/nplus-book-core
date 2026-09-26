@@ -19,9 +19,10 @@ BookTheme   = "light"   # 必填 light：明暗切換由本模組的 SCSS 接管
 locale      = "zh-Hant-TW"
 ```
 
-`site/go.mod` **不要 require 本模組的版本**。全庫 1618 本裡有 318 本釘死了舊版，
-結果拿不到任何主題更新，用了新 shortcode 還會 build 失敗。留空即可，Hugo 會在
-build 時抓最新 tag。
+`site/go.mod` **不要 require 本模組的版本**。釘了版本的站拿不到任何主題更新，
+用了新 shortcode 還會 build 失敗（過去曾有數百本這樣卡住，已清掉）。留空即可，
+Hugo 會在 build 時抓最新 tag。本機 `hugo` build 會把 require 寫回 `go.mod`，
+那是 build 產物，提交前要清掉。
 
 ## Shortcodes
 
@@ -30,23 +31,35 @@ build 時抓最新 tag。
 書籍站首頁的開場。原始 `cover.png` 會照常發佈到 `/cover.png`（portal 與筆記站
 靠那個網址取書封），版面上另外用 build 時產生的 WebP 縮圖。
 
+metadata 放在 `site/content/_index.md` 的 frontmatter `book:` 區塊，正文只寫
+自閉合的 shortcode：
+
 ```
-{{< book-cover
-title="直覺幫浦與其他思考工具"
-src="cover.png"
-author="Daniel C. Dennett"
-date="April 29, 2013"
-link="https://www.amazon.com/dp/B00AR354AQ" >}}
-一到兩句簡介，30–75 字。
-{{< /book-cover >}}
+---
+title: "直覺幫浦與其他思考工具"
+book:
+  title: "直覺幫浦與其他思考工具"
+  author: "Daniel C. Dennett"
+  published: "April 29, 2013"
+  link: "https://www.amazon.com/dp/B00AR354AQ"
+  cover: "cover.png"
+  blurb: "一到兩句繁體中文簡介，30–75 字。"
+---
+
+{{< book-cover />}}
 ```
 
-欄位規則（`src` 一律 `cover.png`、`date` 一律 `Month D, YYYY`、`link` 必須是
-商品頁）見 `books-management/CLAUDE.md`。
+shortcode 仍接受 `title`／`author`／`date`／`link`／`src` inline 參數與成對寫法的內文，
+而且**優先於 frontmatter**——那只是遷移期的相容路徑，**不要新增**：inline 參數一加，
+頁面顯示的值就和 `index.json` 發布的 frontmatter 值分家。少數書刻意用成對的
+`{{< book-cover >}}…{{< /book-cover >}}` 包一大段正文，那時內文就是簡介。
+
+欄位規則（`cover` 一律 `cover.png`、`published` 一律 `Month D, YYYY`、`link` 必須是
+商品頁、`blurb` 繁中 30–75 字）見 `books-management/CLAUDE.md`。
 
 ### `book-overview`
 
-四段深度概覽，JS 收成分頁。內文只寫 h2，段名自由：
+四段深度概覽，JS 收成分頁。內文只寫 h2，段名固定為下面四個：
 
 ```
 {{% book-overview %}}

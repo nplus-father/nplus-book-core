@@ -3,7 +3,7 @@
   reviewable 單位 = docs/ 底下每個 _index.md（一個主題頁）；每筆另帶 `leaf`
   （true = 底下沒有子頁，即真正的葉章節），讓消費端自行決定要算全部頁或只算葉章節。
   某頁「已 review」的判準：frontmatter `reviewed: true`（可再加 `reviewedDate: "YYYY-MM-DD"`；
-  `/read-review` skill 與 handbooks 既有頁面寫的是 `reviewed_date`，兩種 key 都吃）。
+  `/book-apply-review`、`/read-review` skill 與 handbooks 既有頁面寫的是 `reviewed_date`，兩種 key 都吃）。
   books-done 的 Hugo 書用 `read` / `readAt` 慣例，這裡一併吃並映射到同樣的欄位。
   未設 = 未 review（乾淨基線，不需逐頁 stamp）。
 
@@ -70,9 +70,11 @@
   local scan over 1,700 clones — the same move `chars` above made for content
   health.
 
-  `state` keys on the shortcode call, exactly as `overview-lanes/next.sh` and
-  `OverviewCoverageService.stateOf` do; all three have to agree on what "done"
-  means, or the dashboard will contradict the tool that writes the books. The
+  `state` is "done" as soon as the home page carries the shortcode call. That is
+  looser than the other definitions: `OverviewCoverageService.stateOf` matches
+  the full opening marker (with its `%}}`), and audit-overview.py's `is_written`
+  additionally requires all four canonical headings. The three agree on every
+  book today, but when they disagree, audit-overview.py is the authority. The
   marker is matched without its closing `%}}` so the literal never has to carry
   `}}` through the template lexer.
 
