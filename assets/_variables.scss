@@ -129,72 +129,78 @@
 /* 尺度：圓角、字型、字級、間距、動態。與主題無關，直接宣告即可。          */
 /* ------------------------------------------------------------------ */
 
-:root {
-  --radius-sm:  4px;    /* 圖片、tag */
-  --radius-md:  8px;    /* 按鈕 */
-  --radius-lg: 12px;    /* 卡片 */
+$nplus-tokens-emitted: false !default;
 
-  /* 字型全部走系統字，不外連 webfont。實測書庫渲染出來的內文是 87% 中文、
-   * 13% 西文，所以這兩條 stack 的成敗在「中文那半有沒有被指名」。
-   *
-   * 上游 normalize.css 給 html 的 stack 是
-   *     system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
-   * ——裡面一個中文字型都沒有。西文那半是挑過的、中文那半是瀏覽器 fallback
-   * 撿到的，等於把各平台原廠配好的中英組合拆散。指名之後每個平台拿到的都是
-   * 原廠成對的設計：Apple 的 SF Pro + PingFang、微軟的 Segoe UI + 正黑、
-   * Google 的 Roboto/Noto Sans + Noto Sans CJK。 */
-  --font-sans:
-    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
-    "PingFang TC", "Noto Sans CJK TC", "Noto Sans TC",
-    "Microsoft JhengHei", sans-serif;
+@if not $nplus-tokens-emitted {
+  $nplus-tokens-emitted: true !global;
 
-  /* 書名與大標用襯線體。這個書庫裡是柏拉圖、亞里斯多德、卡繆——襯線體是這批
-   * 書自己的字。
-   *
-   * Georgia 排最前面：Palatino 系列 x-height 小、筆畫對比高，跟中文的大字面率
-   * 對不齊，中文會看起來比旁邊的英文大一號；而且 "Palatino Linotype" 在沒裝的
-   * 機器上常解析到 Ghostscript 的 P052 仿製字。Georgia 三大平台都內建。 */
-  --font-serif:
-    Georgia, "Iowan Old Style", Palatino, "Book Antiqua",
-    "Songti TC", "Noto Serif CJK TC", "Source Han Serif TC", "PMingLiU",
-    serif;
-
-  --text-xs:   0.8125rem;
-  --text-sm:   0.875rem;
-  --text-base: 1rem;
-  --text-lg:   1.125rem;
-  --text-xl:   1.375rem;
-  --text-2xl:  1.75rem;
-  --text-3xl:  2.25rem;   /* 書名 */
-
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
-
-  --motion-fast: 120ms;
-  --motion-base: 200ms;
-  --ease: cubic-bezier(0.2, 0, 0.2, 1);
-}
-
-/* 系統偏好。必須存在——切換主題是靠 JS 寫 data-theme，JS 被擋或尚未執行時
- * 只剩這條規則撐著，否則深色模式使用者會先吃到一整頁白色。
- * `:not([data-theme="light"])` 讓明確選過淺色的人不被系統設定蓋掉。 */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    @include theme-dark;
-  }
-}
-
-/* 明確切換勝過系統偏好，兩個方向都要寫 */
-:root[data-theme="dark"]  { @include theme-dark; }
-:root[data-theme="light"] { @include theme-light; }
-
-@media (prefers-reduced-motion: reduce) {
   :root {
-    --motion-fast: 0ms;
-    --motion-base: 0ms;
+    --radius-sm:  4px;    /* 圖片、tag */
+    --radius-md:  8px;    /* 按鈕 */
+    --radius-lg: 12px;    /* 卡片 */
+
+    /* 字型全部走系統字，不外連 webfont。實測書庫渲染出來的內文是 87% 中文、
+     * 13% 西文，所以這兩條 stack 的成敗在「中文那半有沒有被指名」。
+     *
+     * 上游 normalize.css 給 html 的 stack 是
+     *     system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
+     * ——裡面一個中文字型都沒有。西文那半是挑過的、中文那半是瀏覽器 fallback
+     * 撿到的，等於把各平台原廠配好的中英組合拆散。指名之後每個平台拿到的都是
+     * 原廠成對的設計：Apple 的 SF Pro + PingFang、微軟的 Segoe UI + 正黑、
+     * Google 的 Roboto/Noto Sans + Noto Sans CJK。 */
+    --font-sans:
+      system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+      "PingFang TC", "Noto Sans CJK TC", "Noto Sans TC",
+      "Microsoft JhengHei", sans-serif;
+
+    /* 書名與大標用襯線體。這個書庫裡是柏拉圖、亞里斯多德、卡繆——襯線體是這批
+     * 書自己的字。
+     *
+     * Georgia 排最前面：Palatino 系列 x-height 小、筆畫對比高，跟中文的大字面率
+     * 對不齊，中文會看起來比旁邊的英文大一號；而且 "Palatino Linotype" 在沒裝的
+     * 機器上常解析到 Ghostscript 的 P052 仿製字。Georgia 三大平台都內建。 */
+    --font-serif:
+      Georgia, "Iowan Old Style", Palatino, "Book Antiqua",
+      "Songti TC", "Noto Serif CJK TC", "Source Han Serif TC", "PMingLiU",
+      serif;
+
+    --text-xs:   0.8125rem;
+    --text-sm:   0.875rem;
+    --text-base: 1rem;
+    --text-lg:   1.125rem;
+    --text-xl:   1.375rem;
+    --text-2xl:  1.75rem;
+    --text-3xl:  2.25rem;   /* 書名 */
+
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+
+    --motion-fast: 120ms;
+    --motion-base: 200ms;
+    --ease: cubic-bezier(0.2, 0, 0.2, 1);
+  }
+
+  /* 系統偏好。必須存在——切換主題是靠 JS 寫 data-theme，JS 被擋或尚未執行時
+   * 只剩這條規則撐著，否則深色模式使用者會先吃到一整頁白色。
+   * `:not([data-theme="light"])` 讓明確選過淺色的人不被系統設定蓋掉。 */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      @include theme-dark;
+    }
+  }
+
+  /* 明確切換勝過系統偏好，兩個方向都要寫 */
+  :root[data-theme="dark"]  { @include theme-dark; }
+  :root[data-theme="light"] { @include theme-light; }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --motion-fast: 0ms;
+      --motion-base: 0ms;
+    }
   }
 }
