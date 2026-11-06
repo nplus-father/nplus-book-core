@@ -14,6 +14,12 @@
     網址的副檔名——會被角標破壞的是圖片連結。
 */}}
 {{- $dest := .Destination -}}
+{{- with .Page.Site.Params.BookPortableLinks -}}
+  {{- $basePath := (urls.Parse site.BaseURL).Path -}}
+  {{- if or (eq $basePath "/") (not (hasPrefix $dest $basePath)) -}}
+    {{- $dest = partial "docs/links/portable-link" $ -}}
+  {{- end -}}
+{{- end -}}
 {{- $isExternal := or (hasPrefix $dest "http://") (hasPrefix $dest "https://") -}}
 
 {{- $isAmazon := false -}}

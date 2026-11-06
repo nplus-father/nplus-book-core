@@ -1,0 +1,31 @@
+{{ define "menu-container" }}{{ end }}
+
+{{ define "header" }}
+{{ partial "docs/brand" . }}
+{{ end }}
+
+{{ define "toc" }}
+  {{ partial "docs/brand" . }}
+  <nav id="TableOfContents">
+    <ul>
+      {{- $section := partialCached "docs/menu-section" .Site -}}
+      {{- range (partialCached "docs/menu-section-pages" $section) }}
+      <li><a href="#{{ replace (strings.Trim .File.Dir "/") "/" "-" }}">{{ partial "docs/title" . }}</a></li>
+      {{- end }}
+    </ul>
+  </nav>
+{{ end }}
+
+{{ define "footer" }}{{ end }}
+
+{{ define "main" }}
+  <article class="markdown book-whole">
+  {{- $section := partialCached "docs/menu-section" .Site -}}
+  {{- range partialCached "docs/menu-section-pages" $section }}
+    <section id="{{ replace (strings.Trim .File.Dir "/") "/" "-" }}">
+      <h1><a href="{{ .RelPermalink }}">{{ partial "docs/title" . }}</a></h1>
+      {{ .Content }}
+    </section>
+  {{- end }}
+  </article>
+{{ end }}

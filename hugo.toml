@@ -1,9 +1,18 @@
 [params]
 BookFavicon = "logo.png"
+BookPortableLinks = "warning"
+BookDateFormat = "2006-01-02"
+BookLastChangeLink = '{{ or .Site.Params.BookRepo (printf "https://github.com/nplus-father/%s" (path.Base (strings.TrimSuffix "/" .Site.BaseURL))) }}/commit/{{ .GitInfo.Hash }}'
+BookEditLink = '{{ or .Site.Params.BookRepo (printf "https://github.com/nplus-father/%s" (path.Base (strings.TrimSuffix "/" .Site.BaseURL))) }}/edit/main/site/{{ .Path }}'
 
 # 首頁多輸出一份 JSON → /index.json（review 進度索引，供 portal 匯總）
 [outputs]
 home = ["HTML", "JSON"]
+
+[outputFormats.txt]
+mediaType = "text/plain"
+baseName = "source"
+isPlainText = true
 
 [module]
 [[module.imports]]
@@ -24,3 +33,11 @@ target = "static"
 [[module.mounts]]
 source = "archetypes"
 target = "archetypes"
+
+[[module.mounts]]
+source = "content"
+target = "content"
+
+[[module.mounts]]
+source = "i18n"
+target = "i18n"

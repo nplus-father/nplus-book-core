@@ -12,6 +12,7 @@
   menu-filetree.html 的 data-rv-reviewed 相同），右下角的「本章已讀」以它為
   基線：取消一頁已標已讀的章節就是「取消已讀」。
 */}}
+{{- if ne .Layout "book" -}}
 {{- with .File -}}
 <div id="rv-page" hidden
      data-station="{{ path.Base (strings.TrimSuffix "/" site.BaseURL) }}"
@@ -24,4 +25,5 @@
 {{- with resources.Get "review.js" -}}
   {{- $js := . | resources.Minify | resources.Fingerprint -}}
 <script src="{{ $js.RelPermalink }}" defer></script>
+{{- end -}}
 {{- end -}}

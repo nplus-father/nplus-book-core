@@ -171,6 +171,40 @@ inline = [['$', '$']]
 `items` 依 `source` 排序，同一個 `source` 只會有一筆。改欄位時 `assets/review.js` 的
 `payload()`、這張表與 skill 三邊要一起改。
 
+## 全書單頁與純文字
+
+每本書多兩個網址，由本模組掛進站台的 `content/book.md` 產生，書 repo 不用加任何檔案：
+
+| 網址 | 內容 |
+|---|---|
+| `/book/` | 整本書一頁到底，右側目錄列出全部章節；給列印與通讀 |
+| `/book/source.txt` | 全書 Markdown 原文，一章一個 `#` 標題，開頭附章節清單與網址；給 skill 或 LLM 一次抓全書 |
+
+上游 `layout: book` 的版型假設每章正文自帶 `# 標題`；我們的章名在 frontmatter、正文從 `##`
+開始，所以 `layouts/book.html` 與 `layouts/book.txt` 整份 override，替每章補上章名，並以章節
+網址當錨點。這一頁不進站內搜尋（`bookSearchExclude`），也不出現在側欄。`txt` 輸出格式定義在
+本模組的 `hugo.toml`（`outputFormats` 會併進站台），只有 `book.md` 用 frontmatter 開了它。
+
+## 站內連結檢查與頁尾 git 連結
+
+`BookPortableLinks = "warning"` 是模組預設：build 時每個站內連結都拿去 `.GetPage` 對一次，
+找得到就改寫成正確的 permalink，找不到就印 `WARN Reference '…' not found`。根相對的 `/docs/…`
+連結因此在 `nplus.wiki/<repo>/` 底下也能用。`relref` 產出的連結已帶站台路徑前綴，跳過不對。
+圖片走同一套（上游的 `render-image`），page bundle 裡的圖直接命中，`../` 形式的圖片路徑會出
+警告。站台可以在自己的 `hugo.toml` 設成 `"error"`，讓壞連結直接讓 build 失敗。
+
+`BookLastChangeLink` 與 `BookEditLink` 也是模組預設，從 baseURL 最後一段推出 GitHub repo
+（`https://github.com/nplus-father/<repo>`）：頁尾顯示最後修改日期（連到 commit）與「編輯頁面」
+（連到 GitHub 上的 `site/…` 檔案）。全庫的 `enableGitInfo = true` 與 CI 的 `fetch-depth: 0`
+就是為了這個。repo 不在 nplus-father 底下就在站台 `[params]` 設 `BookRepo`。
+
+## 介面字串
+
+Hugo 用站台 `locale` **精確比對**翻譯檔名：全庫的 `locale = 'zh-Hant-TW'` 對不到上游的 `zh-TW.yaml`，
+介面字串就全退回英文（Search、Edit this page）。本模組自帶 `i18n/zh-Hant-TW.yaml`，上游用到的
+每個 id（搜尋框、頁尾、圖示 alt 文字）都有繁中。`i18n/zh.yaml` 是同一份：手冊的 `locale = 'zh'`
+原本會對到上游的簡體檔。
+
 ## 站台參數
 
 | 參數 | 預設 | 用途 |
@@ -178,6 +212,9 @@ inline = [['$', '$']]
 | `stationKind` | `"book"` | 寫進 `/index.json` 的 `kind`。手冊要設 `"handbook"` |
 | `hasReview` | 未設 | 側欄顯示「書評」連結 |
 | `reviewUrl` | 由 baseURL 推導 | 覆寫書評連結網址 |
+| `BookPortableLinks` | `"warning"` | 站內連結 build 時檢查；設 `"error"` 讓壞連結擋 build |
+| `BookRepo` | 由 baseURL 推導 | 覆寫頁尾 git 連結指向的 GitHub repo |
+| `BookDateFormat` | `"2006-01-02"` | 頁尾最後修改日期的格式 |
 
 頁面 frontmatter 的 `reviewed: true`（或書本慣例的 `read: true`）會在側欄加上
 已讀勾勾，並計入 `/index.json`。
@@ -195,6 +232,11 @@ inline = [['$', '$']]
 | `assets/review.js` | 已讀標記本體：本章已讀按鈕、側欄勾選框、localStorage、匯出 |
 | `layouts/_partials/docs/menu-filetree.html` | 上游整份 override，加已讀勾勾與 `data-rv-*`。升級主題要對 diff |
 | `layouts/index.json` | `/index.json`，portal 用來匯總 review 進度 |
+| `layouts/_markup/render-link.html` | 外部連結開新分頁、Amazon 購物車角標；`BookPortableLinks` 開著時先走上游的 portable-link 解析 |
+| `content/book.md` | 掛進每個站台的 `/book/` 頁：`layout: book`，輸出 HTML 與 txt |
+| `layouts/book.html` | 全書單頁版型，上游整份 override：每章補章名、以章節網址當錨點 |
+| `layouts/book.txt` | `/book/source.txt`：章節清單加全書 Markdown 原文 |
+| `i18n/zh-Hant-TW.yaml`、`i18n/zh.yaml` | 主題介面字串的繁中翻譯，蓋過上游 |
 
 ## 改動主題後
 

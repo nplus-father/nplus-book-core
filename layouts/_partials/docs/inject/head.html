@@ -134,6 +134,13 @@
   就收不成分頁。要往 <head> 加東西，加在這裡並用參數開關，不要在站台覆蓋。
 */}}
 {{- $noop := .Content -}}
+{{- if eq .Layout "book" -}}
+  {{- $section := partialCached "docs/menu-section" .Site -}}
+  {{- range partialCached "docs/menu-section-pages" $section -}}
+    {{- $noop = .Content -}}
+    {{- if .Store.Get "hasMath" }}{{ $.Store.Set "hasMath" true }}{{ end -}}
+  {{- end -}}
+{{- end -}}
 {{- if .Page.Store.Get "hasMath" -}}
 <link rel="stylesheet" href="{{ "katex/katex.min.css" | relURL }}" />
 {{- end -}}
