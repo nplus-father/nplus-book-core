@@ -60,7 +60,7 @@
 
       /* 沒明確設定過時，眼前看到的是系統偏好——切換要相對於它，否則在系統為
          深色的機器上第一次點擊會「切成深色」而看起來沒反應。 */
-      if (!current) {
+      if (!current || current === 'auto') {
         current = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
 

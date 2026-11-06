@@ -3,20 +3,19 @@
   主題，否則深色模式使用者會先看到一次全白的閃爍（FOUC）。搬到 </body> 前或
   外部 js 都會重新引入那個閃爍。
 
-  CSS 那邊另有 prefers-color-scheme 後備（見 _variables.scss），所以這段被 CSP
-  擋掉時，系統偏好深色的人也不會拿到白底。
+  hugo-book 在 <html> 寫死 data-theme="light"（BookTheme）。沒選過就改成 auto，交給
+  assets/styles/custom.css 的 prefers-color-scheme；這段被 CSP 擋掉時停在 light。
 */}}
 <script>
   (function () {
+    var saved = null;
     try {
-      var saved = localStorage.getItem('theme');
-      if (saved === 'dark' || saved === 'light') {
-        document.documentElement.setAttribute('data-theme', saved);
-      }
-      /* 沒存過就不設 data-theme，交給 CSS 的 prefers-color-scheme 決定 */
+      saved = localStorage.getItem('theme');
     } catch (e) {
-      /* localStorage 在無痕模式或被封鎖時會丟例外，忽略即可 */
+      /* localStorage 在無痕模式或被封鎖時會丟例外，當成沒選過 */
     }
+    document.documentElement.setAttribute(
+      'data-theme', saved === 'dark' || saved === 'light' ? saved : 'auto');
   })();
 </script>
 

@@ -1,18 +1,232 @@
-/* nplus-book-core/assets/_custom.scss
+/* nplus-book-core/assets/styles/custom.css
  *
- * 只放元件樣式。色票與尺度全部在 _variables.scss，這裡兩件事不要做：
+ * hugo-book v0.15 把 assets/styles/custom.css 排在所有樣式最後（styles/index.yaml），
+ * 本檔整份蓋過上游的空檔。上游的色盤在 themes.css 的 @layer theme 裡；本檔不在
+ * 任何 layer，所以同名變數一律由這裡勝出，不用 !important。
  *
- *   1. 不要宣告 :root——book.scss 第 18 行的 :root 在本檔之後展開，會蓋掉它，
- *      而且沒有錯誤訊息。
- *   2. 不要寫 `:root[data-theme="…"] .foo` 這種隨主題變的選擇器——需要跟著明暗
- *      切換的值做成 token 放進 _variables.scss 的 mixin。寫在這裡很容易漏掉
- *      @media 包裝，`:not([data-theme="light"])` 就會在「沒選過主題的淺色」
- *      狀態下也命中。
+ * 明暗切換：hugo-book 會在 <html> 寫死 data-theme="{{ BookTheme }}"（全庫都是
+ * light）。inject/head.html 的同步 script 在使用者沒選過時改寫成 "auto"，選過就寫
+ * dark／light。所以這裡只認三種狀態：auto 跟系統、dark、其餘一律淺色。JS 被擋時
+ * 停在伺服器給的 light。
  *
- * 也不需要用 !important 壓上游的顏色：_variables.scss 的 mixin 已經把上游的
- * --body-background / --gray-100 / --color-link 等指到同一組 token，上游元件
- * 會自己跟著走。
+ * 所有隨明暗變動的值都是下面兩個區塊裡的 token；元件樣式只引用 token，不要再寫
+ * `:root[data-theme="dark"] .foo` 這種選擇器。
  */
+
+:root {
+  --radius-sm:  4px;    /* 圖片、tag */
+  --radius-md:  8px;    /* 按鈕 */
+  --radius-lg: 12px;    /* 卡片 */
+
+  /* 字型全部走系統字，不外連 webfont。實測書庫渲染出來的內文是 87% 中文、
+   * 13% 西文，所以這兩條 stack 的成敗在「中文那半有沒有被指名」。
+   *
+   * 上游 normalize.css 給 html 的 stack 是
+   *     system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif
+   * ——裡面一個中文字型都沒有。西文那半是挑過的、中文那半是瀏覽器 fallback
+   * 撿到的，等於把各平台原廠配好的中英組合拆散。指名之後每個平台拿到的都是
+   * 原廠成對的設計：Apple 的 SF Pro + PingFang、微軟的 Segoe UI + 正黑、
+   * Google 的 Roboto/Noto Sans + Noto Sans CJK。 */
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    "PingFang TC", "Noto Sans CJK TC", "Noto Sans TC",
+    "Microsoft JhengHei", sans-serif;
+
+  /* 書名與大標用襯線體。這個書庫裡是柏拉圖、亞里斯多德、卡繆——襯線體是這批
+   * 書自己的字。
+   *
+   * Georgia 排最前面：Palatino 系列 x-height 小、筆畫對比高，跟中文的大字面率
+   * 對不齊，中文會看起來比旁邊的英文大一號；而且 "Palatino Linotype" 在沒裝的
+   * 機器上常解析到 Ghostscript 的 P052 仿製字。Georgia 三大平台都內建。 */
+  --font-serif:
+    Georgia, "Iowan Old Style", Palatino, "Book Antiqua",
+    "Songti TC", "Noto Serif CJK TC", "Source Han Serif TC", "PMingLiU",
+    serif;
+
+  --text-xs:   0.8125rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.375rem;
+  --text-2xl:  1.75rem;
+  --text-3xl:  2.25rem;   /* 書名 */
+
+  --gap-1: 0.25rem;
+  --gap-2: 0.5rem;
+  --gap-3: 0.75rem;
+  --gap-4: 1rem;
+  --gap-5: 1.5rem;
+  --gap-6: 2rem;
+
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+/* 色階。所有前景／背景組合都通過 WCAG AA（正文 4.5:1），註解標的是實測值 */
+:root {
+  /* --- 我們的語意 token --- */
+  --bg:           #ffffff;
+  --surface:      #f7f8fa;   /* 卡片、側欄底 */
+  --surface-2:    #eef1f5;   /* 卡片內次級區塊、tag */
+  --text:         #1f2328;   /* 15.8:1 on bg */
+  --text-muted:   #5a6169;   /*  6.3:1 on bg */
+  --border:       #d8dee4;
+  --link:         #0b5ed7;   /*  5.8:1 on bg */
+  --link-hover:   #0a4fb5;
+  --accent:       #8a5a00;   /*  5.9:1 on bg — 購買連結 */
+  --accent-hover: #6d4700;
+  --accent-wash:  rgba(138, 90, 0, 0.10);
+  --success:      #136c39;   /*  6.5:1 on bg — 已讀勾勾 */
+  --danger:       #b91c1c;   /*  5.9:1 on bg — 刪除類按鈕 */
+
+  --btn-bg:       #eef1f5;
+  --btn-bg-hover: #e2e7ee;
+  --btn-text:     #1f2328;
+
+  --shadow-sm:    0 1px 2px rgba(16, 22, 26, 0.06);
+  --shadow-md:    0 2px 8px rgba(16, 22, 26, 0.08);
+  --shadow-lg:    0 8px 24px rgba(16, 22, 26, 0.12);
+
+  /* 書封的投射式陰影：書立在紙上，而不是貼在卡片裡 */
+  --shadow-cover: 0 12px 28px -12px rgba(16, 22, 26, 0.45), 0 2px 6px rgba(16, 22, 26, 0.12);
+
+  /* --- 上游 hugo-book 用的變數名，指到同一組值 --- */
+  --body-background:      var(--bg);
+  --body-background-tint: none;
+  --body-font-color:      var(--text);
+  --color-link:           var(--link);
+  --color-visited-link:   #6b3fbf;
+  --gray-100:             var(--surface);
+  --gray-200:             var(--surface-2);
+  --gray-500:             var(--text-muted);
+  --icon-filter:          none;
+
+  color-scheme: light;
+
+  /* hint / markdown alert 用色，沿用上游的比例 */
+  --color-accent-default: #64748b;
+  --color-accent-note: #2563eb;
+  --color-accent-tip: #15803d;
+  --color-accent-important: #7c3aed;
+  --color-accent-warning: #b45309;
+  --color-accent-caution: #b91c1c;
+  --color-accent-info: #2563eb;
+  --color-accent-success: #15803d;
+  --color-accent-danger: #b91c1c;
+}
+
+:root[data-theme="dark"] {
+  --bg:           #1b1f23;
+  --surface:      #22272e;
+  --surface-2:    #2d333b;
+  --text:         #e6edf3;   /* 14.0:1 on bg */
+  --text-muted:   #9aa4ae;   /*  6.6:1 on bg */
+  --border:       #3d444d;
+  --link:         #6cb6ff;   /*  7.7:1 on bg */
+  --link-hover:   #9fd0ff;
+  --accent:       #e3a008;   /*  7.3:1 on bg */
+  --accent-hover: #f0b429;
+  --accent-wash:  rgba(227, 160, 8, 0.14);
+  --success:      #4ade80;   /*  9.5:1 on bg */
+  --danger:       #ff7b72;   /*  7.0:1 on bg */
+
+  --btn-bg:       #2d333b;
+  --btn-bg-hover: #3a424c;
+  --btn-text:     #e6edf3;
+
+  --shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-md:    0 2px 8px rgba(0, 0, 0, 0.40);
+  --shadow-lg:    0 8px 24px rgba(0, 0, 0, 0.50);
+
+  --shadow-cover: 0 12px 28px -12px rgba(0, 0, 0, 0.75), 0 2px 6px rgba(0, 0, 0, 0.45);
+
+  --body-background:      var(--bg);
+  --body-background-tint: none;
+  --body-font-color:      var(--text);
+  --color-link:           var(--link);
+  --color-visited-link:   #c9a4ff;
+  --gray-100:             var(--surface);
+  --gray-200:             var(--surface-2);
+  --gray-500:             var(--text-muted);
+  --icon-filter:          brightness(0) invert(1);
+
+  color-scheme: dark;
+
+  --color-accent-default: #8b98a8;
+  --color-accent-note: #6cb6ff;
+  --color-accent-tip: #56d364;
+  --color-accent-important: #c9a4ff;
+  --color-accent-warning: #e3a008;
+  --color-accent-caution: #ff7b72;
+  --color-accent-info: #6cb6ff;
+  --color-accent-success: #56d364;
+  --color-accent-danger: #ff7b72;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    --bg:           #1b1f23;
+    --surface:      #22272e;
+    --surface-2:    #2d333b;
+    --text:         #e6edf3;   /* 14.0:1 on bg */
+    --text-muted:   #9aa4ae;   /*  6.6:1 on bg */
+    --border:       #3d444d;
+    --link:         #6cb6ff;   /*  7.7:1 on bg */
+    --link-hover:   #9fd0ff;
+    --accent:       #e3a008;   /*  7.3:1 on bg */
+    --accent-hover: #f0b429;
+    --accent-wash:  rgba(227, 160, 8, 0.14);
+    --success:      #4ade80;   /*  9.5:1 on bg */
+    --danger:       #ff7b72;   /*  7.0:1 on bg */
+  
+    --btn-bg:       #2d333b;
+    --btn-bg-hover: #3a424c;
+    --btn-text:     #e6edf3;
+  
+    --shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.30);
+    --shadow-md:    0 2px 8px rgba(0, 0, 0, 0.40);
+    --shadow-lg:    0 8px 24px rgba(0, 0, 0, 0.50);
+  
+    --shadow-cover: 0 12px 28px -12px rgba(0, 0, 0, 0.75), 0 2px 6px rgba(0, 0, 0, 0.45);
+  
+    --body-background:      var(--bg);
+    --body-background-tint: none;
+    --body-font-color:      var(--text);
+    --color-link:           var(--link);
+    --color-visited-link:   #c9a4ff;
+    --gray-100:             var(--surface);
+    --gray-200:             var(--surface-2);
+    --gray-500:             var(--text-muted);
+    --icon-filter:          brightness(0) invert(1);
+  
+    color-scheme: dark;
+  
+    --color-accent-default: #8b98a8;
+    --color-accent-note: #6cb6ff;
+    --color-accent-tip: #56d364;
+    --color-accent-important: #c9a4ff;
+    --color-accent-warning: #e3a008;
+    --color-accent-caution: #ff7b72;
+    --color-accent-info: #6cb6ff;
+    --color-accent-success: #56d364;
+    --color-accent-danger: #ff7b72;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0ms;
+    --motion-base: 0ms;
+  }
+}
+
+.book-hint.quote    { --accent-color: var(--color-accent-default); }
+.book-hint.question { --accent-color: var(--color-accent-important); }
+.book-hint.example  { --accent-color: var(--color-accent-tip); }
+.book-hint.failure  { --accent-color: var(--color-accent-caution); }
+
+/* 以下是元件樣式，只引用上面的 token。 */
 
 /* ------------------------------------------------------------------ */
 /* 全域                                                                 */
@@ -25,7 +239,7 @@ body {
     color var(--motion-base) var(--ease);
 }
 
-/* 覆蓋上游 normalize.css 給 html 的無中文 stack，理由見 _variables.scss。
+/* 覆蓋上游 normalize.css 給 html 的無中文 stack，理由見本檔開頭 --font-sans。
  * 放 body 而非 html：表單元件靠 `font: inherit` 取值，從 body 繼承就夠。 */
 body {
   font-family: var(--font-sans);
@@ -73,9 +287,9 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
+  gap: var(--gap-1);
   width: fit-content;
-  padding: var(--space-2) var(--space-4);
+  padding: var(--gap-2) var(--gap-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background-color: var(--btn-bg);
@@ -103,7 +317,7 @@ a {
 
 /* 只放一個 emoji 的方形按鈕（返回、書評、主題切換） */
 .book-btn-icon {
-  padding: var(--space-1) var(--space-2);
+  padding: var(--gap-1) var(--gap-2);
   font-size: var(--text-lg);
 }
 
@@ -124,7 +338,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 0.32rem;
-  padding: var(--space-1) 0.45rem;
+  padding: var(--gap-1) 0.45rem;
   border: 0;
   border-radius: 5px;
   background: none;
@@ -162,7 +376,7 @@ a {
 
 .menu-divider {
   height: 1px;
-  margin: var(--space-2) 0 0;
+  margin: var(--gap-2) 0 0;
   border: 0;
   background-color: var(--border);
 }
@@ -174,12 +388,12 @@ a {
 
 .book-hero {
   display: grid;
-  gap: var(--space-5);
-  margin-bottom: var(--space-6);
+  gap: var(--gap-5);
+  margin-bottom: var(--gap-6);
 
   @media (min-width: 640px) {
     grid-template-columns: 232px 1fr;
-    gap: var(--space-6) 2.75rem;
+    gap: var(--gap-6) 2.75rem;
     align-items: start;
   }
 }
@@ -230,7 +444,7 @@ a {
 }
 
 .book-hero__title {
-  margin: -0.35rem 0 var(--space-3);
+  margin: -0.35rem 0 var(--gap-3);
   font-family: var(--font-serif);
   font-size: clamp(1.9rem, 3.4vw, var(--text-3xl));
   font-weight: 600;
@@ -241,7 +455,7 @@ a {
 }
 
 .book-hero__meta {
-  margin: 0 0 var(--space-5);
+  margin: 0 0 var(--gap-5);
   font-size: var(--text-sm);
   color: var(--text-muted);
 }
@@ -253,7 +467,7 @@ a {
 
 .book-hero__lede {
   max-width: 34rem;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--gap-5);
   font-size: var(--text-lg);
   line-height: 1.75;
   color: var(--text);
@@ -282,7 +496,7 @@ a {
 /* ------------------------------------------------------------------ */
 
 .book-overview {
-  margin: var(--space-6) 0;
+  margin: var(--gap-6) 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -290,7 +504,7 @@ a {
 
   /* 未增強狀態：h2 當一般小標，內距撐開 */
   > h2 {
-    margin: var(--space-5) var(--space-5) var(--space-2);
+    margin: var(--gap-5) var(--gap-5) var(--gap-2);
     font-family: var(--font-serif);
     font-size: var(--text-lg);
     font-weight: 600;
@@ -301,8 +515,8 @@ a {
   > ol,
   > blockquote,
   > table {
-    margin-left: var(--space-5);
-    margin-right: var(--space-5);
+    margin-left: var(--gap-5);
+    margin-right: var(--gap-5);
   }
 }
 
@@ -311,8 +525,8 @@ a {
 .book-overview__tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
+  gap: var(--gap-2);
+  padding: var(--gap-3) var(--gap-4);
   background-color: var(--surface);
   border-bottom: 1px solid var(--border);
 }
@@ -350,7 +564,7 @@ a {
 }
 
 .book-overview__panel {
-  padding: var(--space-5) var(--space-5) var(--space-6);
+  padding: var(--gap-5) var(--gap-5) var(--gap-6);
 
   &[hidden] {
     display: none;
@@ -372,7 +586,7 @@ a {
   /* 不再限寬：面板本身已被 hugo-book 的內容欄限制，再壓 36rem 會讓概覽在桌機
      只佔欄寬的一半多，右邊空出一大塊。 */
   > p {
-    margin: 0 0 var(--space-4);
+    margin: 0 0 var(--gap-4);
     line-height: 1.8;
   }
 
@@ -386,7 +600,7 @@ a {
 /* ------------------------------------------------------------------ */
 
 a.amazon-link {
-  padding: 0 var(--space-1);
+  padding: 0 var(--gap-1);
   border-radius: var(--radius-sm);
   color: var(--accent);
   font-weight: 500;
@@ -411,7 +625,7 @@ a.amazon-link {
 /* ------------------------------------------------------------------ */
 
 .reviewed-check {
-  margin-left: var(--space-1);
+  margin-left: var(--gap-1);
   color: var(--success);
   font-size: 0.85em;
   font-weight: 700;
@@ -512,11 +726,11 @@ a.amazon-link {
 }
 
 .rv-tray {
-  right: var(--space-4);
-  bottom: var(--space-4);
+  right: var(--gap-4);
+  bottom: var(--gap-4);
   display: none;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--gap-2);
 }
 
 :root[data-review="on"] .rv-tray {
@@ -585,13 +799,13 @@ a.amazon-link {
 }
 
 .rv-menu {
-  right: var(--space-4);
-  bottom: calc(var(--space-4) + 3.25rem);
+  right: var(--gap-4);
+  bottom: calc(var(--gap-4) + 3.25rem);
   display: flex;
   flex-direction: column;
   gap: 2px;
   min-width: 10rem;
-  padding: var(--space-1);
+  padding: var(--gap-1);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background-color: var(--bg);
@@ -628,7 +842,7 @@ a.amazon-link {
 .rv-toast {
   left: 50%;
   bottom: 5rem;
-  padding: var(--space-2) var(--space-4);
+  padding: var(--gap-2) var(--gap-4);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   background-color: var(--bg);
@@ -668,9 +882,9 @@ a.amazon-link {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-6);
-  margin-bottom: var(--space-6);
-  padding: var(--space-6);
+  gap: var(--gap-6);
+  margin-bottom: var(--gap-6);
+  padding: var(--gap-6);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background-color: var(--surface);
@@ -704,7 +918,7 @@ a.amazon-link {
 .note-cover__content {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--gap-4);
   flex-grow: 1;
   width: 100%;
   min-width: 0;
@@ -713,11 +927,11 @@ a.amazon-link {
 .note-cover__tags {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: var(--gap-2);
 }
 
 .note-cover__tag {
-  padding: 2px var(--space-2);
+  padding: 2px var(--gap-2);
   border-radius: var(--radius-sm);
   background-color: var(--surface-2);
   color: var(--text-muted);
@@ -727,7 +941,7 @@ a.amazon-link {
 
 .note-cover__title {
   margin-top: 0;
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--gap-2);
   font-size: var(--text-2xl);
   font-weight: 800;
   line-height: 1.2;
@@ -735,7 +949,7 @@ a.amazon-link {
 }
 
 .note-cover__description {
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--gap-2);
   font-size: var(--text-base);
   line-height: 1.7;
   color: var(--text);
@@ -744,8 +958,8 @@ a.amazon-link {
 .note-cover__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--gap-3);
   margin-top: auto;
-  padding-top: var(--space-4);
+  padding-top: var(--gap-4);
   border-top: 1px dashed var(--border);
 }

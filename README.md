@@ -15,7 +15,7 @@ path = "github.com/nplus-father/nplus-book-core"
 
 [params]
 BookSection = "docs"
-BookTheme   = "light"   # 必填 light：明暗切換由本模組的 SCSS 接管
+BookTheme   = "light"   # 必填 light：明暗切換由本模組接管（見「樣式與明暗」）
 locale      = "zh-Hant-TW"
 ```
 
@@ -223,8 +223,7 @@ Hugo 用站台 `locale` **精確比對**翻譯檔名：全庫的 `locale = 'zh-H
 
 | 路徑 | 內容 |
 |---|---|
-| `assets/_variables.scss` | **全站唯一的 token 來源**。所有隨明暗變動的值都在這裡的兩個 mixin |
-| `assets/_custom.scss` | 元件樣式。不宣告 `:root`，也不寫 `[data-theme]` 選擇器 |
+| `assets/styles/custom.css` | **全站唯一的樣式檔**：開頭是 token（淺色、深色、跟系統三個區塊），後面是元件樣式 |
 | `layouts/_partials/docs/inject/head.html` | 主題初始化（同步、防 FOUC）＋ 概覽分頁 JS ＋ KaTeX 樣式 |
 | `layouts/_markup/render-passthrough.html` | `$…$` 公式的 render hook，build 時轉成 KaTeX HTML |
 | `layouts/_partials/docs/inject/menu-before.html` | 側欄工具列：回 portal、書評、已讀開關、主題切換 |
@@ -238,10 +237,24 @@ Hugo 用站台 `locale` **精確比對**翻譯檔名：全庫的 `locale = 'zh-H
 | `layouts/book.txt` | `/book/source.txt`：章節清單加全書 Markdown 原文 |
 | `i18n/zh-Hant-TW.yaml`、`i18n/zh.yaml` | 主題介面字串的繁中翻譯，蓋過上游 |
 
+## 樣式與明暗
+
+hugo-book v0.15 起不再用 Sass。上游樣式依 `assets/styles/index.yaml` 串接，`custom.css` 排最後，本模組
+整份蓋過它。上游色盤在 `@layer theme` 裡，本檔不在任何 layer，所以同名變數由本檔勝出。
+
+- 上游在 `:root` 定義了 `--space-1`（1px）、`--space-4`、`--space-8`、`--space-16`。本模組的間距 token
+  叫 `--gap-1`～`--gap-6`，**不要取 `--space-*`**：撞名會讓上游的邊框與內距全部放大。
+- `<html>` 的 `data-theme` 由 hugo-book 依 `BookTheme` 寫死為 `light`。`inject/head.html` 的同步 script
+  在使用者沒選過時改寫為 `auto`，選過就寫 `dark`／`light`；側欄的切換鈕把 `auto` 當成系統偏好。JS
+  被擋時停在 `light`。
+- 上游只替五種 GitHub alert 與 info／success／danger 配色；書裡另有 QUOTE、QUESTION、EXAMPLE、FAILURE，
+  在 `custom.css` 補了對應的 `--accent-color`。
+
 ## 改動主題後
 
-1. **先 build 一本真的書驗過再發 tag。** Hugo 這條線用的是 libsass，`min()` 裡
-   混用 `vw` 與 `px` 會直接中止整個 build，而錯誤只會在 build 時出現。
+1. **先 build 一本真的書驗過再發 tag。** 本機沒有 hugo 時用 `ghcr.io/gohugoio/hugo:<CI 版本>` 的 Docker image，
+   書的 `site/go.mod` 用 `replace` 指到本機這份 clone（不要用 `HUGO_MODULE_REPLACEMENTS`：它會讓 Hugo
+   略過本模組的 go.mod，把 hugo-book 升到最新版）。
 2. `git tag vX.Y.Z && git push origin vX.Y.Z`
 3. **既有的書不會自動更新**——deploy 是 push 觸發的。要散出去得對每個 book repo
    推一個 commit（空 commit 即可）。
